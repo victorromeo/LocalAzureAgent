@@ -1,10 +1,25 @@
-﻿using Newtonsoft.Json;
+﻿using LocalAgent.Serializers;
+using Newtonsoft.Json;
 
 namespace LocalAgent.Models
 {
-    public partial class Variable
+    public interface IVariableExpectation : IExpectation
     {
-        [JsonProperty("template")]
-        public string Template { get; set; }
+
+    }
+
+    public partial class Variable : Expectation, IVariableExpectation
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("value")]
+        public string Value { get; set; }
+    }
+
+    public partial class VariableGroup : Expectation, IVariableExpectation
+    {
+        [JsonProperty("group")]
+        public string Group { get; set; }
     }
 }

@@ -16,13 +16,22 @@ namespace LocalAgent.Runners
 
         public static RunnerFactory Instance => _instance ??= new RunnerFactory();
 
-        public Runner GetRunner(Step step)
+        public Runner GetRunner(IStepExpectation step)
         {
-            if (step.Task == null) return null;
-            if (!_runners.ContainsKey(step.Task)) return null;
+            if (step is StepTask stepTask)
+            {
+                if (stepTask.Task == null) 
+                    return null;
 
-            var runner = (Runner) Activator.CreateInstance(_runners[step.Task], step);
-            return runner;
+                if (!_runners.ContainsKey(stepTask.Task)) 
+                    return null;
+
+                var runner = (Runner)Activator.CreateInstance(_runners[stepTask.Task], step);
+
+                return runner;
+            }
+            
+            return null;
         }
     }
 }

@@ -3,8 +3,7 @@ using System.IO;
 using System.Reflection;
 using CommandLine;
 using LocalAgent.Models;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
+using LocalAgent.Serializers;
 
 namespace LocalAgent
 {
@@ -27,7 +26,15 @@ namespace LocalAgent
             // Deserialize and Load the YAML
             using var reader = sourceFile.OpenText();
             var ymlString = reader.ReadToEnd();
-            Pipeline = Deserialize(ymlString);
+            try
+            {
+                Pipeline = Deserialize(ymlString);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to interpret YAML file.", ex);
+            }
+            
         }
 
         public AgentVariables Agent { get; }
@@ -38,11 +45,34 @@ namespace LocalAgent
 
         public static Pipeline Deserialize(string ymlString)
         {
-            var deserializer = new DeserializerBuilder()
-                .WithNamingConvention(new CamelCaseNamingConvention())
-                .Build();
+            var converter = new AbstractConverter();
+            converter.AddResolver<ExpectationTypeResolver<IVariableExpectation>>()
+                .AddMapping<Variable>(nameof(Variable.Name))
+                .AddMapping<VariableGroup>(nameof(VariableGroup.Group));
 
-            return deserializer.Deserialize<Pipeline>(ymlString);
+            converter.AddResolver<AggregateExpectationTypeResolver<IVariableExpectation>>();
+
+            converter.AddResolver<ExpectationTypeResolver<IJobExpectation>>()
+                .AddMapping<JobStandard>(nameof(JobStandard.Job))
+                .AddMapping<JobDeployment>(nameof(JobDeployment.Deployment));
+
+            converter.AddResolver<ExpectationTypeResolver<IStageExpectation>>()
+                .AddMapping<Stages>(nameof(Stages.Jobs));
+
+            converter.AddResolver<ExpectationTypeResolver<IStepExpectation>>()
+                .AddMapping<StepTask>(nameof(StepTask.Task))
+                .AddMapping<StepScript>(nameof(StepScript.Script))
+                .AddMapping<StepCheckout>(nameof(StepCheckout.Checkout))
+                .AddMapping<StepPowershell>(nameof(StepPowershell.Powershell))
+                .AddMapping<StepBash>(nameof(StepBash.Bash));
+
+            return converter.Deserializer<Pipeline>(ymlString);
+        }
+
+        public string Serialize()
+        {
+            var converter = new AbstractConverter();
+            return converter.Serialize<Pipeline>(Pipeline);
         }
 
         public class AgentVariables

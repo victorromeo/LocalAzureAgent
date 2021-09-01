@@ -8,43 +8,45 @@ namespace LocalAgent.Runners
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public static string Task = "DotNetCoreCLI@2";
 
-        private readonly Step _step;
+        private readonly IStepExpectation _step;
 
-        public DotnetCliRunner(Step step)
+        public DotnetCliRunner(IStepExpectation step)
         {
             _step = step;
         }
 
-        public override bool SupportsTask(Step step)
+        public override bool SupportsTask(IStepExpectation step)
         {
-            return string.CompareOrdinal(step.Task.ToLower(), Task.ToLower()) == 0;
-        }
-
-        public override void Run(BuildContext buildContext, Job jobContext)
-        {
-            base.Run(buildContext, jobContext);
-            string command = null;
-
-            switch (_step.Inputs.Command)
+            if (step is StepTask stepTask)
             {
-                case "clean":
-                    command = $"dotnet clean {_step.Inputs.Projects} {_step.Inputs.Arguments}";
-                    break;
-                case "restore":
-                    command = $"dotnet restore {_step.Inputs.Projects} {_step.Inputs.Arguments}";
-                    break;
-                case "build":
-                    command = $"dotnet build {_step.Inputs.Projects} {_step.Inputs.Arguments}";
-                    break;
-                case "test":
-                    command = $"dotnet test {_step.Inputs.Projects} {_step.Inputs.Arguments}";
-                    break;
-                default:
-                    Logger.Warn($"Unknown command '{_step.Inputs.Command}'");
-                    break;
+                return string.CompareOrdinal(stepTask.Task.ToLower(), Task.ToLower()) == 0;
             }
 
-            Logger.Info($"COMMAND: '{command ?? string.Empty}'");
+            return false;
+        }
+
+        public override void Run(BuildContext buildContext, IJobExpectation job)
+        {
+            base.Run(buildContext, job);
+
+            if (_step is StepTask stepTask)
+            {
+                var command = stepTask.Inputs.ContainsKey("command")
+                    ? stepTask.Inputs["command"]
+                    : string.Empty;
+
+                var projects = stepTask.Inputs.ContainsKey("projects")
+                    ? stepTask.Inputs["projects"]
+                    : string.Empty;
+
+                var arguments = stepTask.Inputs.ContainsKey("arguments")
+                    ? stepTask.Inputs["arguments"]
+                    : string.Empty;
+
+                var callSyntax = $"dotnet {command} {projects} {arguments}";
+
+                Logger.Info($"COMMAND: '{callSyntax ?? string.Empty}'");
+            }
         }
     }
 }

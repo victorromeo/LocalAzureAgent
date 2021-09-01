@@ -2,7 +2,7 @@
   "profiles": {
     "LocalAgent": {
       "commandName": "Project",
-      "commandLineArgs": "azure-pipelines.yml --work \"C:\\agent\\_work\\2\" "
+      "commandLineArgs": "azure-pipelines2.yml --work \"C:\\agent\\_work\\2\" "
     }
   }
 }

@@ -1,18 +1,21 @@
 ﻿using System.Collections.Generic;
+using LocalAgent.Serializers;
 using Newtonsoft.Json;
 
 namespace LocalAgent.Models
 {
-    public class Pipeline
+    public interface IStageExpectation : IExpectation
     {
-        [JsonProperty("trigger")]
-        public IList<string> Trigger { get; set; }
+
+    }
+
+    public partial class Stages : Expectation, IStageExpectation
+    {
+        [JsonProperty("stage")]
+        public string Stage { get; set; }
 
         [JsonProperty("variables")]
         public IList<IVariableExpectation> Variables { get; set; }
-
-        [JsonProperty("stages")]
-        public IList<IStageExpectation> Stages { get; set; }
 
         [JsonProperty("jobs")]
         public IList<IJobExpectation> Jobs { get; set; }

@@ -8,19 +8,24 @@ namespace LocalAgent.Runners
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public static string Task = "PublishBuildArtifacts@1";
 
-        private readonly Step _step;
+        private readonly StepTask _step;
 
-        public PublishBuildArtifactsRunner(Step step)
+        public PublishBuildArtifactsRunner(StepTask step)
         {
             _step = step;
         }
 
-        public override bool SupportsTask(Step step)
+        public override bool SupportsTask(IStepExpectation step)
         {
-            return string.CompareOrdinal(step.Task.ToLower(), Task.ToLower()) == 0;
+            if (step is StepTask stepTask)
+            {
+                return string.CompareOrdinal(stepTask.Task.ToLower(), Task.ToLower()) == 0;
+            }
+
+            return false;
         }
 
-        public override void Run(BuildContext buildContext, Job jobContext)
+        public override void Run(BuildContext buildContext, IJobExpectation jobContext)
         {
             base.Run(buildContext, jobContext);
             Logger.Warn("Not Implemented");

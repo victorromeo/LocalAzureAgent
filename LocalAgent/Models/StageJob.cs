@@ -2,6 +2,8 @@
 
 namespace LocalAgent.Models
 {
+
+
     public partial class StageJob
     {
         [JsonProperty("job")]

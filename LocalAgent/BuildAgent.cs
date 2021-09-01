@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json;
+using LocalAgent.Models;
 using LocalAgent.Runners;
 
 namespace LocalAgent
@@ -31,26 +32,30 @@ namespace LocalAgent
 
                 // Create the Build context
                 var context = new BuildContext(_o);
-                string options = JsonSerializer.Serialize(context, new JsonSerializerOptions()
-                {
-                    WriteIndented = true
-                });
+                //string options = JsonSerializer.Serialize(context, new JsonSerializerOptions()
+                //{
+                //    WriteIndented = true
+                //});
 
-                Logger.Info(options);
+                Logger.Info(context.Serialize());
 
                 foreach (var job in context.Pipeline.Jobs)
                 {
-                    Logger.Info($"JOB: {job.DisplayName}");
-                    for (var index = 0; index < job.Strategy.RunOnce.Deploy.Steps.Length; index++)
+                    if (job is JobStandard jobStandard)
                     {
-                        var step = job.Strategy.RunOnce.Deploy.Steps[index];
-                        Logger.Info($"STEP: ({index}/{job.Strategy.RunOnce.Deploy.Steps.Length}) {step.DisplayName}");
+                        Logger.Info($"JOB: {jobStandard.DisplayName}");
 
-                        //var runner = RunnerFactory.Instance.GetRunner(step);
-                        //if (runner != null)
-                        //{
-                        //    runner.Run(context, job);
-                        //}
+                        for (var index = 0; index < jobStandard.Steps.Count; index++)
+                        {
+                            var step = jobStandard.Steps[index];
+                            Logger.Info($"STEP: ({index}/{jobStandard.Steps.Count}) {step.DisplayName}");
+
+                            var runner = RunnerFactory.Instance.GetRunner(step);
+                            if (runner != null)
+                            {
+                                runner.Run(context, job);
+                            }
+                        }
                     }
                 }
             }

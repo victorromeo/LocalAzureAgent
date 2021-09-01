@@ -1,8 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using LocalAgent.Serializers;
+using Newtonsoft.Json;
 
 namespace LocalAgent.Models
 {
-    public partial class Strategy
+    public interface IStrategyExpectation : IExpectation
+    {
+
+    }
+    public partial class Strategy : Expectation, IStrategyExpectation
     {
         [JsonProperty("runOnce")]
         public RunOnce RunOnce { get; set; }

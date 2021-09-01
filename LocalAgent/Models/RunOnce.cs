@@ -1,8 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using LocalAgent.Serializers;
+using Newtonsoft.Json;
 
 namespace LocalAgent.Models
 {
-    public partial class RunOnce
+    public interface IRunOnceExpectation : IExpectation
+    { }
+
+    public partial class RunOnce : Expectation, IRunOnceExpectation
     {
         [JsonProperty("deploy")]
         public Deploy Deploy { get; set; }

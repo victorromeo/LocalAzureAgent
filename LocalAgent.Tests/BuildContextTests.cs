@@ -1,10 +1,28 @@
 using System;
+using LocalAgent.Models;
+using LocalAgent.Serializers;
 using Xunit;
 
 namespace LocalAgent.Tests
 {
     public class BuildContextTests
     {
+        public AbstractConverter GetConverter()
+        {
+            var converter = new AbstractConverter();
+            converter.AddResolver<ExpectationTypeResolver<IVariableExpectation>>()
+                .AddMapping<Variable>(nameof(Variable.Name))
+                .AddMapping<VariableGroup>(nameof(VariableGroup.Group));
+
+            converter.AddResolver<AggregateExpectationTypeResolver<IVariableExpectation>>();
+
+            converter.AddResolver<ExpectationTypeResolver<IJobExpectation>>()
+                .AddMapping<JobStandard>(nameof(JobStandard.Job));
+
+            return converter;
+        }
+
+
         [Fact]
         public void Deserialize_TriggerOnly()
         {
@@ -21,8 +39,10 @@ trigger:
         {
             var test = @"
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
+- name: solution
+  value: '**/*.sln'
+- name: buildPlatform
+  value: 'Any CPU'
 ";
 
             var actual = BuildContext.Deserialize(test);
@@ -36,7 +56,8 @@ variables:
 stages:
 - stage: MyStage
   variables:
-  - template: variables.yml
+  - name: template
+    value: variables.yml
   jobs:
   - job: Test
     steps:
@@ -51,23 +72,14 @@ stages:
         {
             var test = @"
 jobs:
-- deployment: buildProduct
+- job: buildProduct
   workspace:
     clean: all
   displayName: Build Product
   pool:
     name: $(BuildPoolName)
-  environment: $(BuildEnvironmentAlias)
-  strategy:
-   runOnce:
-     deploy:
-      steps:
-        # Fetch latest revision of source code
-        - checkout: self
-          displayName: 'Pull Latest Source Code'
-          clean: true
-          fetchDepth: 1
-          lfs: true
+  steps:
+    - script: npm test
 ";
 
             var actual = BuildContext.Deserialize(test);
