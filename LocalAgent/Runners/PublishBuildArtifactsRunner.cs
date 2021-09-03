@@ -3,7 +3,14 @@ using NLog;
 
 namespace LocalAgent.Runners
 {
-    public class PublishBuildArtifactsRunner : Runner
+    //- task: PublishBuildArtifacts@1
+    //  inputs:
+    //    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    //    ArtifactName: 'drop'
+    //    publishLocation: 'Container'
+    //    StoreAsTar: true
+
+    public class PublishBuildArtifactsRunner : StepRunner
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public static string Task = "PublishBuildArtifacts@1";
@@ -25,10 +32,13 @@ namespace LocalAgent.Runners
             return false;
         }
 
-        public override void Run(BuildContext buildContext, IJobExpectation jobContext)
+        public override bool Run(BuildContext buildContext, 
+            IStageExpectation stageContext, 
+            IJobExpectation jobContext)
         {
-            base.Run(buildContext, jobContext);
+            base.Run(buildContext, stageContext, jobContext);
             Logger.Warn("Not Implemented");
+            return false;
         }
     }
 }

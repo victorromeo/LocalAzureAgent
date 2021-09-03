@@ -5,7 +5,9 @@ using Newtonsoft.Json;
 namespace LocalAgent.Models
 {
     public interface IJobExpectation : IExpectation
-    { }
+    {
+        string DisplayName { get; set; }
+    }
 
     public class JobUses
     {
@@ -79,6 +81,9 @@ namespace LocalAgent.Models
 
         [JsonProperty("strategy")]
         public Strategy Strategy { get; set; }
+
+        [JsonProperty("variables")]
+        public IList<IVariableExpectation> Variables { get; set; }
     }
 
 

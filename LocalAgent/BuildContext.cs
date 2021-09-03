@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using CommandLine;
@@ -110,7 +111,7 @@ namespace LocalAgent
                 Default = ".",
                 HelpText = AgentWorkFolderVariable)]
             [AgentVariable(AgentWorkFolderVariable)]
-            public string AgentWorkingDirectory { get; set; }
+            public string AgentWorkFolder { get; set; }
 
             [Option("daemon",
                 HelpText = "Run as Windows Service",
@@ -125,6 +126,19 @@ namespace LocalAgent
             [Value(0,
                 HelpText = "Missing yml path")]
             public string SourcePath { get; set; }
+
+            public Dictionary<string, object> GetVariables()
+            {
+                return new Dictionary<string, object>()
+                {
+                    {AgentNameVariable, AgentName},
+                    {AgentHomeDirectoryVariable, AgentHomeDirectory},
+                    {AgentBuildDirectoryVariable, AgentBuildDirectory},
+                    {AgentTempDirectoryVariable, AgentTempDirectory},
+                    {AgentWorkFolderVariable, AgentWorkFolder},
+                    {"Nuget",NugetDirectory}
+                };
+            }
         }
 
         public class BuildVariables
@@ -141,15 +155,25 @@ namespace LocalAgent
             }
 
             [AgentVariable(BuildArtifactStagingDirectoryVariable)]
-            public string BuildArtifactStagingDirectory => $"{_agentVariables.AgentWorkingDirectory}/a";
+            public string BuildArtifactStagingDirectory => $"{_agentVariables.AgentWorkFolder}/a";
 
             [AgentVariable(BuildBinariesDirectoryVariable)]
-            public string BuildBinariesDirectory => $"{_agentVariables.AgentWorkingDirectory}/b";
+            public string BuildBinariesDirectory => $"{_agentVariables.AgentWorkFolder}/b";
 
             [AgentVariable(BuildReasonVariable)] public string BuildReason => "Manual";
 
             [AgentVariable(BuildRepositoryLocalPathVariable)]
-            public string BuildRepositoryLocalPath => $"{_agentVariables.AgentWorkingDirectory}/s";
+            public string BuildRepositoryLocalPath => $"{_agentVariables.AgentWorkFolder}/s";
+
+            public Dictionary<string, object> GetVariables()
+            {
+                return new Dictionary<string, object>()
+                {
+                    {BuildRepositoryLocalPathVariable, BuildRepositoryLocalPath},
+                    {BuildBinariesDirectoryVariable, BuildBinariesDirectory},
+                    {BuildRepositoryLocalPathVariable, BuildRepositoryLocalPath}
+                };
+            }
         }
     }
 }

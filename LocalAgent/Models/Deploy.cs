@@ -1,10 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace LocalAgent.Models
 {
     public partial class Deploy
     {
         [JsonProperty("steps")]
-        public DeployStep[] Steps { get; set; }
+        public IList<IStepExpectation> Steps { get; set; }
     }
 }

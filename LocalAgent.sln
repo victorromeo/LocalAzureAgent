@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31321.278
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalAgent", "LocalAgent\LocalAgent.csproj", "{34054B14-04C3-4895-A518-C8045ECAB6B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalAgent", "LocalAgent\LocalAgent.csproj", "{34054B14-04C3-4895-A518-C8045ECAB6B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalAgent.Tests", "LocalAgent.Tests\LocalAgent.Tests.csproj", "{DD363C75-BAF7-4AB8-8169-57976931C3E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalAgent.Tests", "LocalAgent.Tests\LocalAgent.Tests.csproj", "{DD363C75-BAF7-4AB8-8169-57976931C3E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,19 +1,41 @@
-﻿using LocalAgent.Models;
+﻿using System.Diagnostics;
+using System.Linq;
+using LocalAgent.Models;
 using NLog;
 
 namespace LocalAgent.Runners
 {
-    public class DotnetCliRunner : Runner
+    //- task: DotNetCoreCLI@2
+    //  inputs:
+    //    command: 'build'
+    //    projects: 'pathToProjects'
+    //    arguments: 'arguments'
+    //    workingDirectory: 'workingDirectory'
+
+    public class DotnetCliRunner : StepTaskRunner
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public static string Task = "DotNetCoreCLI@2";
+        private string[] valid_commands = {
+            "build",
+            "clean",
+            //"custom",
+            "nuget push",
+            "pack",
+            "publish",
+            "restore",
+            "run",
+            "test",
+        };
 
-        private readonly IStepExpectation _step;
+        public string Command => FromInputString("command");
+        public string Projects => FromInputString("projects");
+        public string Arguments => FromInputString("arguments");
+        public string Custom => FromInputString("custom");
 
-        public DotnetCliRunner(IStepExpectation step)
-        {
-            _step = step;
-        }
+        public DotnetCliRunner(StepTask stepTask)
+            :base(stepTask)
+        { }
 
         public override bool SupportsTask(IStepExpectation step)
         {
@@ -25,28 +47,30 @@ namespace LocalAgent.Runners
             return false;
         }
 
-        public override void Run(BuildContext buildContext, IJobExpectation job)
+        public override bool Run(BuildContext buildContext, 
+            IStageExpectation stage, 
+            IJobExpectation job)
         {
-            base.Run(buildContext, job);
-
-            if (_step is StepTask stepTask)
+            if (!valid_commands.Contains(Command.ToLower()))
             {
-                var command = stepTask.Inputs.ContainsKey("command")
-                    ? stepTask.Inputs["command"]
-                    : string.Empty;
-
-                var projects = stepTask.Inputs.ContainsKey("projects")
-                    ? stepTask.Inputs["projects"]
-                    : string.Empty;
-
-                var arguments = stepTask.Inputs.ContainsKey("arguments")
-                    ? stepTask.Inputs["arguments"]
-                    : string.Empty;
-
-                var callSyntax = $"dotnet {command} {projects} {arguments}";
-
-                Logger.Info($"COMMAND: '{callSyntax ?? string.Empty}'");
+                Logger.Warn($"Command '{Command}' not supported.");
+                return false;
             }
+
+            base.Run(buildContext, stage, job);
+            var callSyntax = $"dotnet {Command} {Projects} {Arguments}";
+            string callSyntaxFinal = VariableTokenizer.Eval(callSyntax, buildContext, stage, job, StepTask);
+            Logger.Info($"COMMAND: '{callSyntaxFinal}'");
+
+            var processInfo = new ProcessStartInfo("cmd.exe", $"/C {callSyntaxFinal}")
+            {
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+
+            return RunProcess(processInfo);
         }
     }
 }
