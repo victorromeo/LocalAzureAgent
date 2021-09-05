@@ -1,6 +1,6 @@
 ﻿using LocalAgent.Models;
 
-namespace LocalAgent.Runners
+namespace LocalAgent.Runners.Task
 {
     //- task: VSTest@2
     //  inputs:

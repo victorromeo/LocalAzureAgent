@@ -16,5 +16,11 @@ namespace LocalAgent.Models
 
         [JsonProperty("jobs")]
         public IList<IJobExpectation> Jobs { get; set; }
+
+        [JsonProperty("steps")]
+        public IList<IStepExpectation> Steps { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using LocalAgent.Models;
 
-namespace LocalAgent.Runners
+namespace LocalAgent.Runners.Task
 {
     //- task: MSBuild@1
     //  inputs:
@@ -34,9 +34,9 @@ namespace LocalAgent.Runners
             :base(stepTask)
         {}
 
-        public override bool Run(BuildContext buildContext, IStageExpectation stageContext, IJobExpectation jobContext)
+        public override bool Run(BuildContext context, IStageExpectation stage, IJobExpectation job)
         {
-            var ranToSuccess = base.Run(buildContext, stageContext, jobContext);
+            var ranToSuccess = base.Run(context, stage, job);
 
             if (ranToSuccess)
             {

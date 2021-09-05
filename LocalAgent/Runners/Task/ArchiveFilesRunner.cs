@@ -1,6 +1,6 @@
 ﻿using LocalAgent.Models;
 
-namespace LocalAgent.Runners
+namespace LocalAgent.Runners.Task
 {
     //- task: ArchiveFiles@2
     //  inputs:

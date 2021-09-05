@@ -9,6 +9,16 @@ namespace LocalAgent.Models
         string DisplayName { get; set; }
     }
 
+    public enum JobStatus
+    {
+        NotRun = 0,
+        Running = 1,
+        Canceled = 2,
+        Failed = 3,
+        Succeeded = 4,
+        SucceededWithIssues = 5
+    }
+
     public class JobUses
     {
         [JsonProperty("repositories")]

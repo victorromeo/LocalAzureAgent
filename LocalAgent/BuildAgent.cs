@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text.Json;
 using LocalAgent.Models;
 using LocalAgent.Runners;
 
@@ -20,10 +18,12 @@ namespace LocalAgent
 
         public void Start()
         {
+            Logger.Info("Build Agent Started");
         }
 
         public void Stop()
         {
+            Logger.Info("Build Agent Stopped");
         }
 
         public int Run()
@@ -33,7 +33,8 @@ namespace LocalAgent
                 Logger.Info("Build started");
 
                 // Create the Build context
-                var context = new BuildContext(_o);
+                var context = new BuildContext(_o).LoadPipeline();
+
                 Logger.Info(context.Serialize());
 
                 bool ranToSuccess = RunPipeline(context);
@@ -52,27 +53,24 @@ namespace LocalAgent
 
         private static bool RunPipeline(BuildContext context)
         {
+            bool ranToSuccess = RunStages(context, context.Pipeline.Stages)
+                                && RunJobs(context, null, context.Pipeline.Jobs)
+                                && RunSteps(context, null,null, context.Pipeline.Steps);
+
+            return ranToSuccess;
+        }
+
+        private static bool RunStages(BuildContext context, IList<IStageExpectation> stages)
+        {
             bool ranToSuccess = true;
 
-            // If context has Stages defined
-            if (context.Pipeline.Stages?.Count > 0)
+            if (stages?.Count > 0)
             {
-                var stages = context.Pipeline.Stages;
                 for (var i = 0; ranToSuccess && i < stages.Count; i++)
                 {
                     var stage = stages[i];
                     Logger.Info($"STAGE: ({i}/{stages.Count}) {stage.Stage}");
                     ranToSuccess &= RunStage(context, stage);
-                }
-            } 
-            else if (context.Pipeline.Jobs?.Count > 0)
-            {
-                // else if Pipeline has jobs defineds
-                var jobs = context.Pipeline.Jobs;
-                for (var j = 0; ranToSuccess && j < jobs.Count; j++)
-                {
-                    var job = jobs[j];
-                    ranToSuccess &= RunJob(context, null, job);
                 }
             }
 
@@ -81,30 +79,48 @@ namespace LocalAgent
 
         private static bool RunStage(BuildContext context, IStageExpectation stage)
         {
-            bool ranToSuccess = true;
-            var jobs = stage.Jobs;
+            return RunJobs(context, stage, stage.Jobs);
+        }
 
-            for (var j = 0; ranToSuccess && j < jobs.Count; j++)
+        private static bool RunJobs(BuildContext context, 
+            IStageExpectation stage,
+            IList<IJobExpectation> jobs)
+        {
+            bool ranToSuccess = true;
+
+            if (jobs?.Count > 0)
             {
-                var job = jobs[j];
-                Logger.Info($"JOB: ({j}/{jobs.Count}) {job.DisplayName}");
-                ranToSuccess &= RunJob(context, stage, job);
+                for (var j = 0; ranToSuccess && j < jobs.Count; j++)
+                {
+                    var job = jobs[j];
+                    Logger.Info($"JOB: ({j}/{jobs.Count}) {job.DisplayName}");
+                    ranToSuccess &= RunJob(context, stage, job);
+                }
             }
 
             return ranToSuccess;
         }
 
-        private static bool RunJob(BuildContext buildContext, IStageExpectation stageContext, IJobExpectation jobContext)
+        private static bool RunJob(BuildContext context, IStageExpectation stage, IJobExpectation job)
+        {
+            return RunSteps(context, stage, job, GetSteps(job));
+        }
+
+        private static bool RunSteps(BuildContext context,
+            IStageExpectation stage,
+            IJobExpectation job,
+            IList<IStepExpectation> steps)
         {
             bool ranToSuccess = true;
 
-            var steps = GetSteps(jobContext);
-            for (var s = 0; ranToSuccess && s < steps.Count; s++)
+            if (steps?.Count > 0)
             {
-                var step = steps[s];
-                Logger.Info($"STEP: ({s}/{steps.Count}) {step.DisplayName}");
-
-                ranToSuccess = RunStep(buildContext, stageContext, jobContext, step);
+                for (var s = 0; ranToSuccess && s < steps.Count; s++)
+                {
+                    var step = steps[s];
+                    Logger.Info($"STEP: ({s}/{steps.Count}) {step.DisplayName}");
+                    ranToSuccess = RunStep(context, stage, job, step);
+                }
             }
 
             return ranToSuccess;
@@ -116,12 +132,20 @@ namespace LocalAgent
             IStepExpectation step)
         {
             var runner = StepRunnerFactory.Instance.GetRunner(step);
-            if (runner != null)
+            if (runner == null)
             {
-                return runner.Run(buildContext, stageContext, jobContext);
+                Logger.Warn($"STEP: '{step.DisplayName}' failed. No runner found");
+                return false;
             }
 
-            return false;
+            var ranToSuccess = runner.Run(buildContext, stageContext, jobContext);
+
+            if (ranToSuccess)
+                Logger.Info($"STEP: '{step.DisplayName}' succeeded");
+            else
+                Logger.Warn($"STEP: '{step.DisplayName}' failed");
+
+            return ranToSuccess;
         }
 
         private static IList<IStepExpectation> GetSteps(IJobExpectation job)

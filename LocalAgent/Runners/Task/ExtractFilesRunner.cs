@@ -1,6 +1,6 @@
 ﻿using LocalAgent.Models;
 
-namespace LocalAgent.Runners
+namespace LocalAgent.Runners.Task
 {
     //- task: ExtractFiles@1
     //  inputs:

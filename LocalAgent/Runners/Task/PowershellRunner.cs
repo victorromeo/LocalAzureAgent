@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LocalAgent.Models;
 
-namespace LocalAgent.Runners
+namespace LocalAgent.Runners.Task
 {
 //    - task: PowerShell@2
 //      inputs:
@@ -31,7 +27,12 @@ namespace LocalAgent.Runners
 //        workingDirectory: 'working Directory'
 //        runScriptInSeparateScope: true
 
-    public class PowershellRunner : StepRunner
+    public class PowershellRunner : StepTaskRunner
     {
+        public static string Task = "PowerShell@2";
+        public PowershellRunner(StepTask stepTask) 
+            : base(stepTask)
+        {
+        }
     }
 }

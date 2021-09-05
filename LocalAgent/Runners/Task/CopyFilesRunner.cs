@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LocalAgent.Models;
 
-namespace LocalAgent.Runners
+namespace LocalAgent.Runners.Task
 {
     //- task: CopyFiles@2
     //    inputs:
@@ -17,7 +13,12 @@ namespace LocalAgent.Runners
     //    preserveTimestamp: true
     //    ignoreMakeDirErrors: true
 
-    public class CopyFilesRunner : StepRunner
+    public class CopyFilesRunner : StepTaskRunner
     {
+        public static string Task = "CopyFiles@2";
+
+        public CopyFilesRunner(StepTask stepTask) : base(stepTask)
+        {
+        }
     }
 }

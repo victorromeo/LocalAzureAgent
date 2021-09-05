@@ -10,13 +10,14 @@ namespace LocalAgent.Tests
     public class VariableTokenizerTests
     {
         [Theory]
-        [InlineData("abc${round}", "abcTrue")]
+        [InlineData("abc${round}", "abctrue")]
         [InlineData("abc${def}ghi${jkl}", "abc123ghi987")]
         [InlineData("", "")]
         [InlineData("abc", "abc")]
         [InlineData("${abc}", "6789")]
         [InlineData("${tuv}${def}", "321123")]
         [InlineData("${rrr}","987")]
+        [InlineData("'${rrr}'", "'987'")]
         [InlineData("${delayed}","321")]
         [InlineData("${notfound}","${notfound}")]
         [InlineData("${rr}","${t${def}}")]

@@ -1,10 +1,9 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using LocalAgent.Models;
 using NLog;
 
-namespace LocalAgent.Runners
+namespace LocalAgent.Runners.Task
 {
     //- task: BatchScript@1
     //  inputs:
@@ -28,24 +27,14 @@ namespace LocalAgent.Runners
             :base(stepTask)
         {}
 
-        public override bool SupportsTask(IStepExpectation step)
+        public override bool Run(BuildContext context, 
+            IStageExpectation stage, 
+            IJobExpectation job)
         {
-            if (step is StepTask stepTask)
-            {
-                return string.CompareOrdinal(stepTask.Task.ToLower(), Task.ToLower()) == 0;
-            }
-
-            return false;
-        }
-
-        public override bool Run(BuildContext buildContext, 
-            IStageExpectation stageContext, 
-            IJobExpectation jobContext)
-        {
-            base.Run(buildContext, stageContext, jobContext);
+            base.Run(context, stage, job);
 
             var workingDir = VariableTokenizer.Eval(WorkingDirectory,
-                    buildContext, stageContext,jobContext,StepTask);
+                    context, stage,job,StepTask);
 
             workingDir = string.IsNullOrWhiteSpace(workingDir) 
                          || !new DirectoryInfo(workingDir).Exists
@@ -53,8 +42,8 @@ namespace LocalAgent.Runners
                 : $"cd /d {WorkingDirectory} &&";
 
             var command = VariableTokenizer.Eval($"/C {workingDir} {Filename} {Arguments}",
-                buildContext, stageContext,
-                jobContext, StepTask);
+                context, stage,
+                job, StepTask);
 
             var processInfo = new ProcessStartInfo("cmd.exe", command)
             {

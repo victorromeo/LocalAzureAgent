@@ -1,7 +1,7 @@
 ﻿using LocalAgent.Models;
 using NLog;
 
-namespace LocalAgent.Runners
+namespace LocalAgent.Runners.Task
 {
     //- task: PublishBuildArtifacts@1
     //  inputs:
@@ -22,21 +22,11 @@ namespace LocalAgent.Runners
             _step = step;
         }
 
-        public override bool SupportsTask(IStepExpectation step)
+        public override bool Run(BuildContext context, 
+            IStageExpectation stage, 
+            IJobExpectation job)
         {
-            if (step is StepTask stepTask)
-            {
-                return string.CompareOrdinal(stepTask.Task.ToLower(), Task.ToLower()) == 0;
-            }
-
-            return false;
-        }
-
-        public override bool Run(BuildContext buildContext, 
-            IStageExpectation stageContext, 
-            IJobExpectation jobContext)
-        {
-            base.Run(buildContext, stageContext, jobContext);
+            base.Run(context, stage, job);
             Logger.Warn("Not Implemented");
             return false;
         }

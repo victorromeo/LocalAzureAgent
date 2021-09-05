@@ -3,7 +3,7 @@ using System.Linq;
 using LocalAgent.Models;
 using NLog;
 
-namespace LocalAgent.Runners
+namespace LocalAgent.Runners.Task
 {
     //- task: DotNetCoreCLI@2
     //  inputs:
@@ -37,17 +37,7 @@ namespace LocalAgent.Runners
             :base(stepTask)
         { }
 
-        public override bool SupportsTask(IStepExpectation step)
-        {
-            if (step is StepTask stepTask)
-            {
-                return string.CompareOrdinal(stepTask.Task.ToLower(), Task.ToLower()) == 0;
-            }
-
-            return false;
-        }
-
-        public override bool Run(BuildContext buildContext, 
+        public override bool Run(BuildContext context, 
             IStageExpectation stage, 
             IJobExpectation job)
         {
@@ -57,9 +47,9 @@ namespace LocalAgent.Runners
                 return false;
             }
 
-            base.Run(buildContext, stage, job);
+            base.Run(context, stage, job);
             var callSyntax = $"dotnet {Command} {Projects} {Arguments}";
-            string callSyntaxFinal = VariableTokenizer.Eval(callSyntax, buildContext, stage, job, StepTask);
+            string callSyntaxFinal = VariableTokenizer.Eval(callSyntax, context, stage, job, StepTask);
             Logger.Info($"COMMAND: '{callSyntaxFinal}'");
 
             var processInfo = new ProcessStartInfo("cmd.exe", $"/C {callSyntaxFinal}")

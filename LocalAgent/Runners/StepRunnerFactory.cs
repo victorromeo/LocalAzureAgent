@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using LocalAgent.Models;
+using LocalAgent.Runners.Base;
+using LocalAgent.Runners.Task;
 
 namespace LocalAgent.Runners
 {
@@ -11,14 +13,22 @@ namespace LocalAgent.Runners
     {
         private static StepRunnerFactory _instance;
 
-        private readonly IDictionary<string, Type> _runners = new Dictionary<string, Type>
+        private readonly Dictionary<string, Type> _runners = new()
         {
-            {DotnetCliRunner.Task, typeof(DotnetCliRunner)},
-            {PublishBuildArtifactsRunner.Task, typeof(PublishBuildArtifactsRunner)},
-            {ExtractFilesRunner.Task, typeof(ExtractFilesRunner)},
             {ArchiveFilesRunner.Task, typeof(ArchiveFilesRunner)},
+            {BatchScriptRunner.Task, typeof(BatchScriptRunner)},
+            {CopyFilesRunner.Task, typeof(CopyFilesRunner)},
+            {DotnetCliRunner.Task, typeof(DotnetCliRunner)},
+            {ExtractFilesRunner.Task, typeof(ExtractFilesRunner)},
             {MSBuildRunner.Task, typeof(MSBuildRunner)},
+            {PowershellRunner.Task,typeof(PowershellRunner)},
+            {PublishBuildArtifactsRunner.Task, typeof(PublishBuildArtifactsRunner)},
             {VSTestRunner.Task, typeof(VSTestRunner)}
+        };
+
+        private readonly Dictionary<Type, Type> _concreteRunners = new()
+        {
+            {typeof(StepScript), typeof(ScriptRunner)}
         };
 
         public static StepRunnerFactory Instance => _instance ??= new StepRunnerFactory();
@@ -36,6 +46,15 @@ namespace LocalAgent.Runners
                 var runner = (StepRunner)Activator.CreateInstance(_runners[stepTask.Task], step);
 
                 return runner;
+            }
+            else
+            {
+                var stepType = step.GetType();
+                if (_concreteRunners.ContainsKey(stepType))
+                {
+                    var runner = (StepRunner)Activator.CreateInstance(_concreteRunners[stepType], step);
+                    return runner;
+                }
             }
             
             return null;

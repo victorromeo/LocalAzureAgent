@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Runtime.CompilerServices;
 using CommandLine;
 using NLog;
 using NLog.Config;
@@ -8,6 +9,9 @@ using NLog.Targets;
 using Topshelf;
 
 #endregion
+
+// Support Unit Testing
+[assembly:InternalsVisibleTo("LocalAgent.Tests")]
 
 namespace LocalAgent
 {

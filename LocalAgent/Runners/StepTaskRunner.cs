@@ -7,7 +7,6 @@ namespace LocalAgent.Runners
 {
     public abstract class StepTaskRunner : StepRunner
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         protected readonly StepTask StepTask;
 
         protected string FromInputString(string key)
@@ -48,48 +47,6 @@ namespace LocalAgent.Runners
         protected StepTaskRunner(StepTask stepTask)
         {
             StepTask = stepTask;
-        }
-
-        protected virtual bool RunProcess(ProcessStartInfo processInfo)
-        {
-            Process process = null;
-            bool ranToSuccess;
-
-            try
-            {
-                process = System.Diagnostics.Process.Start(processInfo);
-                if (process == null)
-                {
-                    throw new NullReferenceException(nameof(process));
-                }
-
-                process.OutputDataReceived += (sender, e) => { Logger.Info(e.Data ?? string.Empty); };
-                process.BeginOutputReadLine();
-                process.ErrorDataReceived += (sender, e) =>
-                {
-                    Logger.Error(e.Data ?? string.Empty);
-                    ranToSuccess = false;
-                };
-                process.EnableRaisingEvents = true;
-                process.BeginErrorReadLine();
-                process.WaitForExit();
-
-                var exitCode = process.ExitCode;
-                Logger.Info($"Exit Code: {exitCode}");
-                ranToSuccess = exitCode == 0;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
-                ranToSuccess = false;
-            }
-            finally
-            {
-                if (process != null)
-                    process.Close();
-            }
-
-            return ranToSuccess;
         }
     }
 }
