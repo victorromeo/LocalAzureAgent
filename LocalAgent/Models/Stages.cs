@@ -7,6 +7,7 @@ namespace LocalAgent.Models
     public interface IStageExpectation : IExpectation
     {
         string Stage { get; set; }
+        IList<IVariableExpectation> Variables { get; set; }
         IList<IJobExpectation> Jobs { get; set; }
     }
 

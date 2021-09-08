@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using LocalAgent.Models;
+using LocalAgent.Variables;
 using Xunit;
 
 namespace LocalAgent.Tests
@@ -23,33 +21,35 @@ namespace LocalAgent.Tests
         [InlineData("${rr}","${t${def}}")]
         public void Check(string before, string after)
         {
-            var buildVariables = new Dictionary<string, object>()
+            var stageVariables = new List<IVariableExpectation>()
             {
-                {"abc", "678"},
-                {"def", "123"},
-                {"jkl", 456},
-                {"delayed","${tuv}"}
+                new Variable() {Name ="abc", Value ="678"},
+                new Variable() {Name ="def", Value ="123"},
+                new Variable() {Name ="jkl", Value = 456},
+                new Variable() {Name ="delayed", Value ="${tuv}"},
             };
 
-            var agentVariables = new Dictionary<string, object>()
+            var jobVariables = new List<IVariableExpectation>()
             {
-                {"tuv", 321},
-                {"jkl",987},
-                {"round", true}
+                new Variable() {Name ="tuv", Value =321},
+                new Variable() {Name ="jkl", Value =987},
+                new Variable() {Name ="round", Value =true},
             };
 
-            var stepVariables = new Dictionary<string, object>()
+            var stepVariables = new List<IVariableExpectation>()
             {
-                {"abc", "6789"},
-                {"rrr", "${jkl}"},
-                {"rr","${t${def}}"}
+                new Variable() {Name ="abc", Value ="6789"},
+                new Variable() {Name ="rrr", Value ="${jkl}"},
+                new Variable() {Name ="rr", Value ="${t${def}}"}
             };
 
-            var actual = VariableTokenizer.Eval(before,
-                buildVariables,
-                agentVariables,
-                null, 
-                null, 
+            var actual = new Variables.Variables()
+            {
+                AgentVariables = new AgentVariables(),
+                BuildVariables = new BuildVariables(),
+            }.Eval(before,
+                stageVariables, 
+                jobVariables, 
                 stepVariables);
 
             Assert.Equal(after, actual);

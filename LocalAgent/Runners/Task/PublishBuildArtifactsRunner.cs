@@ -10,24 +10,25 @@ namespace LocalAgent.Runners.Task
     //    publishLocation: 'Container'
     //    StoreAsTar: true
 
-    public class PublishBuildArtifactsRunner : StepRunner
+    public class PublishBuildArtifactsRunner : StepTaskRunner
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public static string Task = "PublishBuildArtifacts@1";
+        protected override ILogger Logger => LogManager.GetCurrentClassLogger();
 
         private readonly StepTask _step;
 
         public PublishBuildArtifactsRunner(StepTask step)
+            :base(step)
         {
-            _step = step;
+            GetLogger().Info($"Created {Task}");
         }
 
-        public override bool Run(BuildContext context, 
+        public override bool Run(PipelineContext context, 
             IStageExpectation stage, 
             IJobExpectation job)
         {
             base.Run(context, stage, job);
-            Logger.Warn("Not Implemented");
+            GetLogger().Warn("Not Implemented");
             return false;
         }
     }

@@ -6,23 +6,25 @@ namespace LocalAgent.Runners.Base
 {
     public class ScriptRunner : StepRunner
     {
-        private new static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        protected override ILogger Logger => LogManager.GetCurrentClassLogger();
 
         private readonly StepScript _step;
 
         public ScriptRunner(IStepExpectation step)
         {
             _step = step as StepScript;
+            GetLogger().Info($"Created {nameof(ScriptRunner)}");
         }
 
-        public override bool Run(BuildContext context, IStageExpectation stage, IJobExpectation job)
+        public override bool Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)
         {
-            bool ranToSuccess = base.Run(context, stage, job);
+            base.Run(context, stage, job);
+            GetLogger().Info($"{_step.Script}");
 
-            Logger.Info($"{_step.Script}");
-
-            var script = VariableTokenizer.Eval(_step.Script,
-                context, stage, job, _step);
+            var script = context.Variables.Eval(_step.Script, 
+                stage?.Variables, 
+                job?.Variables, 
+                null);
 
             var processInfo = new ProcessStartInfo("cmd.exe", $"/C {script}")
             {

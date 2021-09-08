@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Linq;
 using LocalAgent.Models;
+using LocalAgent.Variables;
 using NLog;
 
 namespace LocalAgent.Runners.Task
@@ -14,7 +15,7 @@ namespace LocalAgent.Runners.Task
 
     public class DotnetCliRunner : StepTaskRunner
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        protected override ILogger Logger => LogManager.GetCurrentClassLogger();
         public static string Task = "DotNetCoreCLI@2";
         private string[] valid_commands = {
             "build",
@@ -34,23 +35,32 @@ namespace LocalAgent.Runners.Task
         public string Custom => FromInputString("custom");
 
         public DotnetCliRunner(StepTask stepTask)
-            :base(stepTask)
-        { }
+            : base(stepTask)
+        {
+            GetLogger().Info($"Created {Task}");
+        }
 
-        public override bool Run(BuildContext context, 
+        public override bool Run(PipelineContext context, 
             IStageExpectation stage, 
             IJobExpectation job)
         {
             if (!valid_commands.Contains(Command.ToLower()))
             {
-                Logger.Warn($"Command '{Command}' not supported.");
+                GetLogger().Warn($"Command '{Command}' not supported.");
                 return false;
             }
 
             base.Run(context, stage, job);
-            var callSyntax = $"dotnet {Command} {Projects} {Arguments}";
-            string callSyntaxFinal = VariableTokenizer.Eval(callSyntax, context, stage, job, StepTask);
-            Logger.Info($"COMMAND: '{callSyntaxFinal}'");
+
+            var workingDirectory = context.Variables[VariableNames.BuildSourcesDirectory];
+
+            var callSyntax = $"\"cd {workingDirectory} && dotnet {Command} {Projects} {Arguments}\"";
+            string callSyntaxFinal = context.Variables.Eval(callSyntax, 
+                stage?.Variables,
+                job?.Variables,
+                null);
+
+            GetLogger().Info($"COMMAND: '{callSyntaxFinal}'");
 
             var processInfo = new ProcessStartInfo("cmd.exe", $"/C {callSyntaxFinal}")
             {

@@ -7,6 +7,7 @@ namespace LocalAgent.Models
     public interface IJobExpectation : IExpectation
     {
         string DisplayName { get; set; }
+        IList<IVariableExpectation> Variables { get; set; }
     }
 
     public enum JobStatus

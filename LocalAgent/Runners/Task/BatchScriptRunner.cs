@@ -14,7 +14,7 @@ namespace LocalAgent.Runners.Task
     //    failOnStandardError: true
     public class BatchScriptRunner : StepTaskRunner
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        protected override ILogger Logger => LogManager.GetCurrentClassLogger();
         public static string Task = "BatchScript@1";
 
         public string Filename => FromInputString("filename");
@@ -24,26 +24,25 @@ namespace LocalAgent.Runners.Task
         public bool ModifyEnvironment => FromInputBool("modifyenvironment");
 
         public BatchScriptRunner(StepTask stepTask)
-            :base(stepTask)
-        {}
+            : base(stepTask)
+        {
+            GetLogger().Info($"Created {Task}");
+        }
 
-        public override bool Run(BuildContext context, 
+        public override bool Run(PipelineContext context, 
             IStageExpectation stage, 
             IJobExpectation job)
         {
             base.Run(context, stage, job);
 
-            var workingDir = VariableTokenizer.Eval(WorkingDirectory,
-                    context, stage,job,StepTask);
+            var workingDir = context.Variables[WorkingDirectory];
 
             workingDir = string.IsNullOrWhiteSpace(workingDir) 
                          || !new DirectoryInfo(workingDir).Exists
                 ? string.Empty
                 : $"cd /d {WorkingDirectory} &&";
 
-            var command = VariableTokenizer.Eval($"/C {workingDir} {Filename} {Arguments}",
-                context, stage,
-                job, StepTask);
+            var command = context.Variables[$"/C {workingDir} {Filename} {Arguments}"];
 
             var processInfo = new ProcessStartInfo("cmd.exe", command)
             {

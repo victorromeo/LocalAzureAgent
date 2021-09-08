@@ -31,7 +31,7 @@ trigger:
 - main
 ";
 
-            var actual = BuildContext.Deserialize(test);
+            var actual = PipelineContext.Deserialize(test);
         }
 
         [Fact]
@@ -45,7 +45,7 @@ variables:
   value: 'Any CPU'
 ";
 
-            var actual = BuildContext.Deserialize(test);
+            var actual = PipelineContext.Deserialize(test);
         }
 
         [Fact]
@@ -64,7 +64,7 @@ stages:
     - script: echo $(myhello)
 ";
 
-            var actual = BuildContext.Deserialize(test);
+            var actual = PipelineContext.Deserialize(test);
         }
 
         [Fact]
@@ -82,7 +82,7 @@ jobs:
     - script: npm test
 ";
 
-            var actual = BuildContext.Deserialize(test);
+            var actual = PipelineContext.Deserialize(test);
         }
     }
 }

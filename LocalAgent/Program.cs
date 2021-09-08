@@ -1,8 +1,10 @@
 ﻿#region
 
 using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using CommandLine;
+using LocalAgent.Variables;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -17,33 +19,37 @@ namespace LocalAgent
 {
     internal class Program
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         private static void Main(string[] args)
         {
-            Parser.Default.ParseArguments<BuildContext.AgentVariables>(args)
+            // Declare logging
+            var config = new LoggingConfiguration();
+            ConsoleTarget logConsole;
+            logConsole = new ConsoleTarget(nameof(logConsole));
+
+            config.AddRule(LogLevel.Info, LogLevel.Fatal, logConsole);
+            LogManager.Configuration = config;
+
+            Logger.Info("Starting");
+
+            Parser.Default.ParseArguments<PipelineOptions>(args)
                 .WithParsed(o =>
                 {
-                    // Declare logging
-                    var config = new LoggingConfiguration();
-                    ConsoleTarget logConsole;
-                    logConsole = new ConsoleTarget(nameof(logConsole));
-
-                    config.AddRule(LogLevel.Info, LogLevel.Fatal, logConsole);
-                    LogManager.Configuration = config;
-
                     if (o.BackgroundService)
                     {
                         var rc = HostFactory.Run(x =>
                         {
-                            x.Service<BuildAgent>(s =>
+                            x.Service<PipelineAgent>(s =>
                             {
-                                s.ConstructUsing(n => new BuildAgent(o));
+                                s.ConstructUsing(n => new PipelineAgent(o));
                                 s.WhenStarted(tc => tc.Start());
                                 s.WhenStopped(tc => tc.Stop());
                             });
 
                             x.RunAsLocalSystem();
 
-                            x.SetDescription("LocalAgent Build Agent");
+                            x.SetDescription("LocalAgent Pipeline Agent");
                             x.SetDisplayName("LocalAgent");
                             x.SetServiceName("LocalAgent");
                             x.UseNLog();
@@ -54,12 +60,23 @@ namespace LocalAgent
                     }
                     else
                     {
-                        var agent = new BuildAgent(o);
+                        var agent = new PipelineAgent(o);
                         Environment.ExitCode = agent.Run();
                     }
-                }).WithNotParsed(e => { Environment.ExitCode = 1; });
+                }).WithNotParsed(e =>
+                {
+                    var appName = Assembly.GetEntryAssembly().GetName().Name;
+                    Logger.Error($"Expected: {appName} <source path> <yml path> <options>");
 
-            Console.WriteLine("Hello World!");
+                    foreach (var error in e)
+                    {
+                        Logger.Error(error.Tag);
+                    }
+                    
+                    Environment.ExitCode = 1;
+                });
+
+            Logger.Info("Finished");
         }
     }
 }

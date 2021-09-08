@@ -5,39 +5,40 @@ using LocalAgent.Runners;
 
 namespace LocalAgent
 {
-    public class BuildAgent
+    public class PipelineAgent
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly BuildContext.AgentVariables _o;
+        private readonly PipelineOptions _o;
 
-        public BuildAgent(BuildContext.AgentVariables o)
+        public PipelineAgent(PipelineOptions o)
         {
             _o = o;
         }
 
         public void Start()
         {
-            Logger.Info("Build Agent Started");
+            Logger.Info("Agent Started");
         }
 
         public void Stop()
         {
-            Logger.Info("Build Agent Stopped");
+            Logger.Info("Agent Stopped");
         }
 
         public int Run()
         {
             try
             {
-                Logger.Info("Build started");
+                Logger.Info("Pipeline started");
 
-                // Create the Build context
-                var context = new BuildContext(_o).LoadPipeline();
-
-                Logger.Info(context.Serialize());
-
-                bool ranToSuccess = RunPipeline(context);
+                // Create the Build context and load the pipeline
+                var context = new PipelineContext(_o).Prepare().LoadPipeline();
+                if (context != null)
+                {
+                    Logger.Info($"Pipeline\n{context.Serialize()}");
+                    RunPipeline(context);
+                }
             }
             catch (Exception ex)
             {
@@ -45,13 +46,13 @@ namespace LocalAgent
             }
             finally
             {
-                Logger.Info("Build finished");
+                Logger.Info("Pipeline finished");
             }
 
             return 0;
         }
 
-        private static bool RunPipeline(BuildContext context)
+        private static bool RunPipeline(PipelineContext context)
         {
             bool ranToSuccess = RunStages(context, context.Pipeline.Stages)
                                 && RunJobs(context, null, context.Pipeline.Jobs)
@@ -60,7 +61,8 @@ namespace LocalAgent
             return ranToSuccess;
         }
 
-        private static bool RunStages(BuildContext context, IList<IStageExpectation> stages)
+        private static bool RunStages(PipelineContext context, 
+            IList<IStageExpectation> stages)
         {
             bool ranToSuccess = true;
 
@@ -77,12 +79,13 @@ namespace LocalAgent
             return ranToSuccess;
         }
 
-        private static bool RunStage(BuildContext context, IStageExpectation stage)
+        private static bool RunStage(PipelineContext context, 
+            IStageExpectation stage)
         {
             return RunJobs(context, stage, stage.Jobs);
         }
 
-        private static bool RunJobs(BuildContext context, 
+        private static bool RunJobs(PipelineContext context, 
             IStageExpectation stage,
             IList<IJobExpectation> jobs)
         {
@@ -101,12 +104,14 @@ namespace LocalAgent
             return ranToSuccess;
         }
 
-        private static bool RunJob(BuildContext context, IStageExpectation stage, IJobExpectation job)
+        private static bool RunJob(PipelineContext context, 
+            IStageExpectation stage, 
+            IJobExpectation job)
         {
             return RunSteps(context, stage, job, GetSteps(job));
         }
 
-        private static bool RunSteps(BuildContext context,
+        private static bool RunSteps(PipelineContext context,
             IStageExpectation stage,
             IJobExpectation job,
             IList<IStepExpectation> steps)
@@ -126,9 +131,9 @@ namespace LocalAgent
             return ranToSuccess;
         }
 
-        private static bool RunStep(BuildContext buildContext, 
-            IStageExpectation stageContext, 
-            IJobExpectation jobContext,
+        private static bool RunStep(PipelineContext context, 
+            IStageExpectation stage, 
+            IJobExpectation job,
             IStepExpectation step)
         {
             var runner = StepRunnerFactory.Instance.GetRunner(step);
@@ -138,13 +143,15 @@ namespace LocalAgent
                 return false;
             }
 
-            var ranToSuccess = runner.Run(buildContext, stageContext, jobContext);
+            context.SetupVariables(stage,job,step);
+            var ranToSuccess = runner.Run(context, stage, job);
 
             if (ranToSuccess)
                 Logger.Info($"STEP: '{step.DisplayName}' succeeded");
             else
                 Logger.Warn($"STEP: '{step.DisplayName}' failed");
 
+            context.CleanTempFolder();
             return ranToSuccess;
         }
 

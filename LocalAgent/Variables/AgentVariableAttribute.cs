@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LocalAgent
+namespace LocalAgent.Variables
 {
     [AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = true)]
     public class AgentVariableAttribute : Attribute

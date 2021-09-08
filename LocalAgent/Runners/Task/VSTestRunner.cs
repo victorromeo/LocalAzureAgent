@@ -1,4 +1,5 @@
 ﻿using LocalAgent.Models;
+using NLog;
 
 namespace LocalAgent.Runners.Task
 {
@@ -29,13 +30,12 @@ namespace LocalAgent.Runners.Task
     public class VSTestRunner : StepTaskRunner
     {
         public static string Task = "VSTest@2";
-
-        private readonly StepTask _stepTask;
+        protected override ILogger Logger => LogManager.GetCurrentClassLogger();
 
         public VSTestRunner(StepTask stepTask)
           :base(stepTask)
         {
-            _stepTask = stepTask;
+            GetLogger().Info($"Created {Task}");
         }
     }
 }

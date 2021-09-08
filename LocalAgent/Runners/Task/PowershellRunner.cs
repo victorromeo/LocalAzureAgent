@@ -1,4 +1,5 @@
 ﻿using LocalAgent.Models;
+using NLog;
 
 namespace LocalAgent.Runners.Task
 {
@@ -30,9 +31,11 @@ namespace LocalAgent.Runners.Task
     public class PowershellRunner : StepTaskRunner
     {
         public static string Task = "PowerShell@2";
+        protected override ILogger Logger => LogManager.GetCurrentClassLogger();
         public PowershellRunner(StepTask stepTask) 
             : base(stepTask)
         {
+            GetLogger().Info($"Created {Task}");
         }
     }
 }

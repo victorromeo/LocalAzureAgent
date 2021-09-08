@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using LocalAgent.Models;
-using NLog;
 
 namespace LocalAgent.Runners
 {

@@ -1,4 +1,5 @@
 ﻿using LocalAgent.Models;
+using NLog;
 
 namespace LocalAgent.Runners.Task
 {
@@ -15,9 +16,13 @@ namespace LocalAgent.Runners.Task
     public class ArchiveFilesRunner : StepTaskRunner
     {
         public static string Task = "ArchiveFiles@2";
+        protected override ILogger Logger => LogManager.GetCurrentClassLogger();
 
         public ArchiveFilesRunner(StepTask stepTask)
-            :base(stepTask)
-        { }
+            : base(stepTask)
+        {
+            GetLogger().Info($"Created {Task}");
+        }
+
     }
 }

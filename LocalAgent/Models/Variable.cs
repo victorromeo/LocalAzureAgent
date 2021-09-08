@@ -14,7 +14,7 @@ namespace LocalAgent.Models
         public string Name { get; set; }
 
         [JsonProperty("value")]
-        public string Value { get; set; }
+        public object Value { get; set; }
     }
 
     public partial class VariableGroup : Expectation, IVariableExpectation

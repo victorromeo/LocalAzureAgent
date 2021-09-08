@@ -5,9 +5,15 @@ using NLog;
 
 namespace LocalAgent.Runners
 {
-    public class StepRunner
+    public abstract class StepRunner
     {
-        protected static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        protected ILogger LoggerInstance;
+        protected abstract ILogger Logger { get; }
+
+        public virtual ILogger GetLogger()
+        {
+            return LoggerInstance ??= Logger;
+        }
 
         /// <summary>
         /// Executes a Step from a Job
@@ -16,13 +22,15 @@ namespace LocalAgent.Runners
         /// <param name="stage">Stage Context for the execution of the Step</param>
         /// <param name="job">Job Context for the execution of the Step</param>
         /// <returns>Returns True, if runs to success, else False</returns>
-        public virtual bool Run(BuildContext context, 
+        public virtual bool Run(PipelineContext context, 
             IStageExpectation stage, 
             IJobExpectation job)
         {
             return false;
         }
-        protected virtual bool RunProcess(ProcessStartInfo processInfo)
+        protected virtual bool RunProcess(ProcessStartInfo processInfo, 
+            DataReceivedEventHandler onData = null, 
+            DataReceivedEventHandler onError = null)
         {
             Process process = null;
             bool ranToSuccess;
@@ -39,6 +47,7 @@ namespace LocalAgent.Runners
                 {
                     Logger.Info(e.Data ?? string.Empty);
                 };
+                if (onData != null) process.OutputDataReceived += onData;
                 process.BeginOutputReadLine();
                 process.ErrorDataReceived += (sender, e) =>
                 {
@@ -48,6 +57,7 @@ namespace LocalAgent.Runners
                         ranToSuccess = false;
                     }
                 };
+                if (onError != null) process.ErrorDataReceived += onError;
                 
                 process.BeginErrorReadLine();
                 process.WaitForExit();
