@@ -1,4 +1,6 @@
-﻿using LocalAgent.Models;
+﻿using System;
+using System.IO;
+using LocalAgent.Models;
 using NLog;
 
 namespace LocalAgent.Runners.Task
@@ -18,11 +20,50 @@ namespace LocalAgent.Runners.Task
         public static string Task = "ArchiveFiles@2";
         protected override ILogger Logger => LogManager.GetCurrentClassLogger();
 
+        public string RootFolderOrFile => FromInputString("rootFolderOrFile");
+        public bool IncludeRootFolder => FromInputBool("includeRootFolder");
+        public string ArchiveType => FromInputString("archiveType");
+        public string ArchiveFile => FromInputString("archiveFile");
+
+        public bool ReplaceExistingArchive => FromInputBool("replaceExistingArchive");
+        public bool Verbose => FromInputBool("verbose");
+        public bool Quiet => FromInputBool("quiet");
+
         public ArchiveFilesRunner(StepTask stepTask)
             : base(stepTask)
         {
             GetLogger().Info($"Created {Task}");
         }
 
+        public override bool Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)
+        {
+            base.Run(context, stage, job);
+
+            var command =
+                new CommandLineCommandBuilder(Path.Combine(context.Variables.AgentVariables.AgentHomeDirectory,
+                    "7za.exe"));
+
+            command.Arg($"a {ArchiveFile}");
+            command.ArgIf(Verbose, "-bb3");
+            command.ArgIf(Quiet, "-bb0");
+            command.ArgIf(ReplaceExistingArchive, "-aoa");
+            command.ArgIf(ArchiveType, $"-t{ArchiveType}");
+
+            command.Arg(IncludeRootFolder
+                    ? $"{RootFolderOrFile}"
+                    : $"{RootFolderOrFile}\\");
+
+            var process = command.Compile(context, stage, job, StepTask);
+
+            Logger.Info($"Command: {process.FileName} {process.Arguments}");
+
+            return RunProcess(process);
+        }
+
+        public static bool? IsDirectory(string path)
+        {
+            return Directory.Exists(path) ? true
+                : File.Exists(path) ? (bool?) false : null;
+        }
     }
 }

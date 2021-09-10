@@ -1,0 +1,29 @@
+name: $(TeamProject)_$(Build.DefinitionName)_$(Build.SourceBranch)_$(Date:yyyyMMdd)$(Rev:.r)
+
+steps:
+  - script: echo '$(Build.BuildNumber)' # outputs customized build number like project_def_master_20200828.1
+  - task: DotNetCoreCLI@2
+    displayName: Build Project
+    inputs:
+      command: 'build'
+      projects: 'WebApplication1.sln'
+  - task: DotNetCoreCLI@2
+    displayName: Publish Project
+    inputs:
+      command: 'publish'
+      projects: 'WebApplication1.sln'
+      arguments: '-o ${Build.BinariesDirectory} -c Release'
+  - task: ArchiveFiles@2
+    displayName: Archive Files
+    inputs:
+      rootFolderOrFile: '$(Build.BinariesDirectory)'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+      archiveType: 'zip'
+      verbose: true
+      includeRootFolder: false
+  - task: CopyFiles@2
+    displayName: Copy Binaries
+    inputs:
+      SourceFolder: '${Build.BinariesDirectory}'
+      TargetFolder: '${Build.ArtifactStagingDirectory}/WebApplication1'
+      Contents: '*'
