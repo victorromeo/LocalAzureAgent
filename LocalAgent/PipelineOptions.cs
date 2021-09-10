@@ -37,6 +37,8 @@ namespace LocalAgent
         public const bool BackgroundServiceDefault = false;
         public const string BackgroundServiceHelpText = "True - Run as Windows Service, False - Run then exit immediately";
         public const string BackgroundServiceVariable = "Agent.BackgroundService";
+        public const string BuildDefinitionNameDefault = "dev";
+        public const string BuildDefinitionNameHelpText = "Build.DefinitionName - Alias of build, For example. dev";
         public const string NugetFolderDefault = "../nuget";
         public const string NugetFolderHelpText = "Folder used to store Nuget Packages for use by the pipeline";
         public const string NugetFolderVariable = "Agent.NugetFolder";
@@ -111,6 +113,9 @@ namespace LocalAgent
         /// </summary>
         [Option("daemon", Default = BackgroundServiceDefault, HelpText = BackgroundServiceHelpText)]
         public bool BackgroundService { get; set; }
+
+        [Option("def",Default = BuildDefinitionNameDefault, HelpText = BuildDefinitionNameHelpText)]
+        public string BuildDefinitionName { get; set; }
 
         /// <summary>
         /// The path where Nuget packages will be restored, for use by the build agent.  This directory caches the packages.

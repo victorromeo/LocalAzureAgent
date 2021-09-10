@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using LocalAgent.Models;
+using LocalAgent.Utilities;
 
 namespace LocalAgent.Variables
 {
@@ -117,20 +118,30 @@ namespace LocalAgent.Variables
 
             WorkFolderBase = Path.Combine(AgentVariables.AgentWorkFolder, AgentVariables.AgentId.ToString());
 
+            var stagingDirectory = Path.Combine(WorkFolderBase, "a");
+            var binariesDirectory = Path.Combine(WorkFolderBase, "b");
+            var sourcesDirectory = Path.Combine(WorkFolderBase, "s");
+            var testResultsDirectory = Path.Combine(WorkFolderBase, "TestResults");
+
             BuildVariables = new BuildVariables()
             {
-                BuildArtifactStagingDirectory = Path.Combine(WorkFolderBase, "a"),
-                BuildBinariesDirectory = Path.Combine(WorkFolderBase, "b"),
+                BuildArtifactStagingDirectory = stagingDirectory,
+                BuildBinariesDirectory = binariesDirectory,
+                BuildDefinitionName = options.BuildDefinitionName,
                 BuildReason = "Manual",
-                BuildRepositoryLocalPath = Path.Combine(WorkFolderBase, "s"),
-                BuildSourcesDirectory = Path.Combine(WorkFolderBase, "s"),
-                BuildSourceVersion = "",
-                BuildStagingDirectory = Path.Combine(WorkFolderBase, "a"),
+                BuildRepositoryLocalPath = sourcesDirectory,
+                BuildSourcesDirectory = sourcesDirectory,
+                BuildSourceVersion = GitUtils.GetSourceVersion(sourcesDirectory)
+                    ?? string.Empty,
+                BuildSourceBranch = GitUtils.GetSourceBranchName(sourcesDirectory)
+                    ?? string.Empty,
+                BuildStagingDirectory = stagingDirectory,
                 BuildUri = "laa:///${Build.Number}",
-                CommonTestResultsDirectory = Path.Combine(WorkFolderBase, "TestResults"),
+                CommonTestResultsDirectory = testResultsDirectory,
             };
 
-            //Environment = new EnvironmentVariables();
+            EnvironmentVariables = new EnvironmentVariables();
+
             //System = new SystemVariables();
 
             return this;
@@ -188,6 +199,11 @@ namespace LocalAgent.Variables
                 { VariableNames.BuildUri, BuildVariables.BuildUri },
                 { VariableNames.CommonTestResultsDirectory, BuildVariables.CommonTestResultsDirectory }
             };
+
+            foreach (var kp in EnvironmentVariables.Build())
+            {
+                lookup[kp.Key] = kp.Value;
+            }
 
             if (stageVariables != null)
             {

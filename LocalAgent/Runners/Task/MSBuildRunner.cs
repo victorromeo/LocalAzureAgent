@@ -100,7 +100,10 @@ namespace LocalAgent.Runners.Task
                 throw new Exception($"MSBuild version {MsBuildVersion} not found");
             }
 
-            var buildTargets = GetBuildTargets(context);
+            var buildTargets = new FileUtils().FindFilesByPattern(context,
+                    context.Variables[VariableNames.BuildSourcesDirectory],
+                    Solution.Split(";")
+                );
 
             if (buildTargets.Count == 0)
             {
@@ -111,26 +114,35 @@ namespace LocalAgent.Runners.Task
 
             for (var index = 0; ranToSuccess & index < buildTargets.Count; index++)
             {
-                var buildTarget = buildTargets[index];
-                var operation = $"\"{msBuildPath}\" {buildTarget} {MsBuildArguments}";
-                var callSyntax = context.Variables.Eval(operation,
-                    stage?.Variables, 
-                    job?.Variables, 
-                    null);
-
-                Logger.Info($"MSBUILD: {callSyntax}");
-
-                var processInfo = new ProcessStartInfo("cmd.exe", $"/C {callSyntax}")
+                if (Clean)
                 {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                };
+                    var cleanTarget = buildTargets[index];
+                    var command = new CommandLineCommandBuilder("{msBuildPath}")
+                        .Arg(cleanTarget)
+                        .ArgIf(Clean, "/t:Clean")
+                        .ArgIf(Platform, "/p:Platform=" + Platform)
+                        .ArgIf(Configuration, "/p:Configuration=" + Configuration);
 
-                ranToSuccess &= RunProcess(processInfo);
+                    var processInfo = command.Compile(context, stage, job, StepTask);
+                    GetLogger().Info($"COMMAND: {processInfo.FileName} {processInfo.Arguments}");
+
+                    ranToSuccess = RunProcess(processInfo);
+;               }
+
+                if (ranToSuccess)
+                {
+                    var buildTarget = buildTargets[index];
+                    var command = new CommandLineCommandBuilder("{msBuildPath}")
+                        .Arg(buildTarget)
+                        .ArgIf(Platform, "/p:Platform=" + Platform)
+                        .ArgIf(Configuration, "/p:Configuration=" + Configuration);
+
+                    var processInfo = command.Compile(context, stage, job, StepTask);
+                    GetLogger().Info($"COMMAND: {processInfo.FileName} {processInfo.Arguments}");
+
+                    ranToSuccess = RunProcess(processInfo);
+                }
             }
-
 
             return ranToSuccess;
         }

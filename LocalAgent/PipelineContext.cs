@@ -24,6 +24,37 @@ namespace LocalAgent
             Logger.Info("Build Context created");
             Logger.Info($"Source Path: {Variables.SourcePath}");
             Logger.Info($"Working Source Path: {Variables.WorkFolderBase}");
+
+            var repo = GitUtils.GetRepository(Variables[VariableNames.BuildSourcesDirectory]);
+            if (repo != null)
+            {
+                Logger.Info($"GIT: {repo.Head.FriendlyName} {repo.Head.Tip}");
+
+                var status = GitUtils.GetStatus(Variables[VariableNames.BuildSourcesDirectory]);
+                if (status.IsDirty)
+                {
+                    Logger.Info("Dirty");
+                    foreach (var added in status.Added)
+                    {
+                        Logger.Info($"git added: {added.FilePath}");
+                    }
+
+                    foreach (var updated in status.Modified)
+                    {
+                        Logger.Info($"git modified: {updated.FilePath}");
+                    }
+
+                    foreach (var missing in status.Missing)
+                    {
+                        Logger.Info($"git missing: {missing.FilePath}");
+                    }
+
+                    foreach (var removed in status.Removed)
+                    {
+                        Logger.Info($"git removed: {removed.FilePath}");
+                    }
+                }
+            }
         }
 
         public PipelineContext Prepare()

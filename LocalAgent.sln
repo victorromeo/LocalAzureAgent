@@ -33,6 +33,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WindowsFormsApp1", "Windows
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebApplication1", "WebApplication1", "{C495FB2D-220E-4395-B947-2820DD84608B}"
+	ProjectSection(SolutionItems) = preProject
+		Samples\WebApplication1\pipeline.yml = Samples\WebApplication1\pipeline.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

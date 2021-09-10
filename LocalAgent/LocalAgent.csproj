@@ -7,11 +7,18 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <PackageReference Include="Topshelf" Version="4.3.0" />
     <PackageReference Include="Topshelf.NLog" Version="4.3.0" />
     <PackageReference Include="YamlDotNet" Version="11.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Agent.Worker">
+      <HintPath>..\..\..\..\..\..\agent\bin\Agent.Worker.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

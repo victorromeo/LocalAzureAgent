@@ -10,11 +10,14 @@
       "commandName": "Project",
       "commandLineArgs": "ConsoleApp1 pipeline.yml --work \"work\"  --id 1",
       "workingDirectory": "$(SolutionDir)\\Samples",
+      "environmentVariables": {
+        "TeamProject": "TP"
+      },
       "nativeDebugging": true
     },
     "LocalAgent WebApplication1": {
       "commandName": "Project",
-      "commandLineArgs": "WebApplication1/pipeline.yml --work \"work\"  --id 2",
+      "commandLineArgs": "WebApplication1 pipeline.yml --work \"work\"  --id 2",
       "workingDirectory": "$(SolutionDir)\\Samples",
       "nativeDebugging": true
     },

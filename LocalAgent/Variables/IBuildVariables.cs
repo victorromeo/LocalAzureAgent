@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace LocalAgent.Variables
+﻿namespace LocalAgent.Variables
 {
     public interface IBuildVariables
     {
@@ -12,7 +10,7 @@ namespace LocalAgent.Variables
         string BuildNumber { get; set; }
         string BuildReason { get; }
         string BuildRepositoryLocalPath { get; }
-        string BuildSourceBranch { get; }
+        string BuildSourceBranch { get; set; }
         string BuildSourcesDirectory { get; }
         string BuildSourceVersion { get; }
         string BuildStagingDirectory { get; }

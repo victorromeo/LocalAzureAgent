@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using LocalAgent.Variables;
 
 namespace LocalAgent.Utilities
 {
@@ -56,6 +57,13 @@ namespace LocalAgent.Utilities
             return new List<string>();
         }
 
+        public virtual IList<string> FindFile(string path)
+        {
+            return new FileInfo(path).Exists
+                ? new List<string> {path}
+                : new List<string>();
+        }
+
         /// <summary>
         /// Copies all the files from one folder into another, in parallel
         /// </summary>
@@ -93,6 +101,31 @@ namespace LocalAgent.Utilities
         public void CreateFolder(string path)
         {
             Directory.CreateDirectory(path);
+        }
+
+        public IList<string> FindFilesByPattern(PipelineContext context, string path, IList<string> patterns)
+        {
+            var buildTargets = new List<string>();
+
+            foreach (var s in patterns)
+            {
+                if (s.StartsWith("**/*."))
+                {
+                    var searchExtension = s.Replace("**/*.", "*.");
+                    buildTargets.AddRange(FindFiles(context.Variables[VariableNames.BuildSourcesDirectory], searchExtension, true));
+                }
+                else if (s.StartsWith("*."))
+                {
+                    buildTargets.AddRange(FindFiles(context.Variables[VariableNames.BuildSourcesDirectory], s, false));
+                }
+                else
+                {
+                    var searchPath = Path.Combine(context.Variables[VariableNames.BuildSourcesDirectory], s);
+                    buildTargets.AddRange(FindFile(searchPath));
+                }
+            }
+
+            return buildTargets;
         }
     }
 

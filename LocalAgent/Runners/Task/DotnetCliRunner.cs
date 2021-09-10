@@ -1,6 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using LocalAgent.Models;
+using LocalAgent.Utilities;
 using LocalAgent.Variables;
 using NLog;
 
@@ -30,7 +32,7 @@ namespace LocalAgent.Runners.Task
         };
 
         public string Command => FromInputString("command");
-        public string Projects => FromInputString("projects");
+        public IList<string> Projects => FromInputString("projects").Split(";");
         public string Arguments => FromInputString("arguments");
         public string Custom => FromInputString("custom");
 
@@ -51,26 +53,26 @@ namespace LocalAgent.Runners.Task
             }
 
             base.Run(context, stage, job);
-
             var workingDirectory = context.Variables[VariableNames.BuildSourcesDirectory];
+            var targets = new FileUtils().FindFilesByPattern(context, workingDirectory, Projects);
 
-            var callSyntax = $"\"cd {workingDirectory} && dotnet {Command} {Projects} {Arguments}\"";
-            string callSyntaxFinal = context.Variables.Eval(callSyntax, 
-                stage?.Variables,
-                job?.Variables,
-                null);
-
-            GetLogger().Info($"COMMAND: '{callSyntaxFinal}'");
-
-            var processInfo = new ProcessStartInfo("cmd.exe", $"/C {callSyntaxFinal}")
+            bool ranToSuccess = true;
+            for (var index = 0; ranToSuccess  && index < targets.Count; index++)
             {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            };
+                var buildTarget = targets[index];
+                var command = new CommandLineCommandBuilder("dotnet")
+                    .ArgWorkingDirectory(workingDirectory)
+                    .Arg(Command)
+                    .Arg(buildTarget)
+                    .ArgIf(Arguments, Arguments);
 
-            return RunProcess(processInfo);
+                var processInfo = command.Compile(context, stage, job, StepTask);
+
+                GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
+                ranToSuccess = RunProcess(processInfo);
+            }
+
+            return ranToSuccess;
         }
     }
 }
