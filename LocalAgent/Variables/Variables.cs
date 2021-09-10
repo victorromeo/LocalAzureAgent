@@ -104,7 +104,7 @@ namespace LocalAgent.Variables
             {
                 AgentBuildDirectory = Path.Combine(Environment.CurrentDirectory, options.AgentBuildDirectory),
                 AgentEntryFolder = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location),
-                AgentHomeDirectory = new DirectoryInfo(Assembly.GetExecutingAssembly().Location).FullName,
+                AgentHomeDirectory = new FileInfo(Assembly.GetExecutingAssembly().Location).DirectoryName,
                 AgentId = options.AgentId,
                 AgentJobName = options.AgentJobName,
                 AgentJobStatus = options.AgentJobStatus,
@@ -125,6 +125,7 @@ namespace LocalAgent.Variables
 
             BuildVariables = new BuildVariables()
             {
+                BuildId = "1",
                 BuildArtifactStagingDirectory = stagingDirectory,
                 BuildBinariesDirectory = binariesDirectory,
                 BuildDefinitionName = options.BuildDefinitionName,
