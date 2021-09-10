@@ -63,8 +63,8 @@ namespace LocalAgent.Runners.Task
                 var command = new CommandLineCommandBuilder("dotnet")
                     .ArgWorkingDirectory(workingDirectory)
                     .Arg(Command)
-                    .Arg(buildTarget)
-                    .ArgIf(Arguments, Arguments);
+                    .ArgIf(Arguments, Arguments)
+                    .Arg(buildTarget);
 
                 var processInfo = command.Compile(context, stage, job, StepTask);
 
