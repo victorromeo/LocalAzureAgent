@@ -52,15 +52,7 @@ namespace LocalAgent.Tests
                 YamlPath = "SomePipeline.yaml"
             };
 
-            // var buildVariables = new Mock<IBuildVariables>();
-            // buildVariables.Setup(i=>i.BuildSourcesDirectory).Returns("");
-
-            // var variables = new Mock<IVariables>();
-            // variables.Setup(i => i.BuildVariables).Returns(buildVariables.Object);
-            // var context = new Mock<PipelineContext>(variables.Object);
-
             var context = new Mock<PipelineContext>(options);
-
             var actual = runner.Object.GetBuildTargets(context.Object);
 
             Assert.Equal(expected.Split(";"), actual);
