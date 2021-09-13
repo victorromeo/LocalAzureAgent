@@ -1,1 +1,0 @@
-..\..\LocalAgent\bin\Debug\net5.0\LocalAgent.exe pipeline.yml --work ../work
