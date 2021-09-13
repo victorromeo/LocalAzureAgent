@@ -21,10 +21,4 @@
     <PackageReference Include="YamlDotNet" Version="11.2.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Agent.Worker">
-      <HintPath>..\..\..\..\..\..\agent\bin\Agent.Worker.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

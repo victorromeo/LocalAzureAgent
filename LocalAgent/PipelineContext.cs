@@ -25,12 +25,16 @@ namespace LocalAgent
             Logger.Info($"Source Path: {Variables.SourcePath}");
             Logger.Info($"Working Source Path: {Variables.WorkFolderBase}");
 
-            var repo = GitUtils.GetRepository(Variables[VariableNames.BuildSourcesDirectory]);
+            // Assess the GIT repository to log current state
+            var buildSourceDirectory = Variables[VariableNames.BuildSourcesDirectory];
+            if (string.IsNullOrEmpty(buildSourceDirectory)) return;
+
+            var repo = GitUtils.GetRepository(buildSourceDirectory);
             if (repo != null)
             {
                 Logger.Info($"GIT: {repo.Head.FriendlyName} {repo.Head.Tip}");
 
-                var status = GitUtils.GetStatus(Variables[VariableNames.BuildSourcesDirectory]);
+                var status = GitUtils.GetStatus(buildSourceDirectory);
                 if (status.IsDirty)
                 {
                     Logger.Info("Dirty");

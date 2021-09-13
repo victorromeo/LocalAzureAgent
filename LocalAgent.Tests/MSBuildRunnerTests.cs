@@ -11,9 +11,9 @@ namespace LocalAgent.Tests
     public class MSBuildRunnerTests
     {
         [Theory]
-        [InlineData("abc/def.sln","**/*.sln",".sln")]
-        [InlineData("abc/def.csproj;hji.csproj","**/*.csproj",".csproj")]
-        [InlineData("abc.csproj","*.csproj",".csproj")]
+        [InlineData("abc/def.sln","**/*.sln","*.sln")]
+        [InlineData("abc/def.csproj;hji.csproj","**/*.csproj","*.csproj")]
+        [InlineData("abc.csproj","*.csproj","*.csproj")]
         [InlineData("abc.csproj","abc.csproj","abc.csproj")]
         [InlineData("abc.sln", "abc.sln", "abc.sln")]
         [InlineData("", "abc.sln", "abc.sln")]
@@ -46,9 +46,20 @@ namespace LocalAgent.Tests
             runner.Setup(i => i.GetLogger())
                 .Returns(new NullLogger(new LogFactory()));
 
-            var buildVariables = new Mock<IBuildVariables>();
-            buildVariables.Setup(i => i.BuildSourcesDirectory).Returns("");
-            var context = new Mock<PipelineContext>(null, buildVariables.Object, null, null);
+            var options = new PipelineOptions() {
+                AgentWorkFolder = "work",
+                SourcePath = "C:\\SomeAgentPath",
+                YamlPath = "SomePipeline.yaml"
+            };
+
+            // var buildVariables = new Mock<IBuildVariables>();
+            // buildVariables.Setup(i=>i.BuildSourcesDirectory).Returns("");
+
+            // var variables = new Mock<IVariables>();
+            // variables.Setup(i => i.BuildVariables).Returns(buildVariables.Object);
+            // var context = new Mock<PipelineContext>(variables.Object);
+
+            var context = new Mock<PipelineContext>(options);
 
             var actual = runner.Object.GetBuildTargets(context.Object);
 

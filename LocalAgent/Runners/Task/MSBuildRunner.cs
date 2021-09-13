@@ -153,19 +153,20 @@ namespace LocalAgent.Runners.Task
 
             foreach (var s in Solution.Split(";", StringSplitOptions.RemoveEmptyEntries))
             {
+                var buildSourcesDirectory = context.Variables[VariableNames.BuildSourcesDirectory];
                 if (s.StartsWith("**/*."))
                 {
                     var searchExtension = s.Replace("**/*.", "*.");
-                    buildTargets.AddRange(FindProjects(context.Variables[VariableNames.BuildSourcesDirectory], searchExtension, true));
+                    buildTargets.AddRange(FindProjects(buildSourcesDirectory, searchExtension, true));
                 }
                 else if (s.StartsWith("*."))
                 {
                     //var searchExtension = s.Replace("*.", ".");
-                    buildTargets.AddRange(FindProjects(context.Variables.BuildVariables.BuildSourcesDirectory, s, false));
+                    buildTargets.AddRange(FindProjects(buildSourcesDirectory, s, false));
                 }
                 else
                 {
-                    var searchPath = Path.Combine(context.Variables.BuildVariables.BuildSourcesDirectory, s);
+                    var searchPath = Path.Combine(buildSourcesDirectory, s);
                     buildTargets.AddRange(FindProject(searchPath));
                 }
             }

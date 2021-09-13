@@ -102,7 +102,7 @@ namespace LocalAgent.Variables
 
             AgentVariables = new AgentVariables()
             {
-                AgentBuildDirectory = Path.Combine(Environment.CurrentDirectory, options.AgentBuildDirectory),
+                AgentBuildDirectory = Path.Combine(Environment.CurrentDirectory, options.AgentBuildDirectory ?? string.Empty),
                 AgentEntryFolder = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location),
                 AgentHomeDirectory = new FileInfo(Assembly.GetExecutingAssembly().Location).DirectoryName,
                 AgentId = options.AgentId,
@@ -201,10 +201,13 @@ namespace LocalAgent.Variables
                 { VariableNames.CommonTestResultsDirectory, BuildVariables.CommonTestResultsDirectory }
             };
 
-            foreach (var kp in EnvironmentVariables.Build())
-            {
-                lookup[kp.Key] = kp.Value;
+            if (EnvironmentVariables != null) {
+                foreach (var kp in EnvironmentVariables.Build())
+                {
+                    lookup[kp.Key] = kp.Value;
+                }
             }
+
 
             if (stageVariables != null)
             {
