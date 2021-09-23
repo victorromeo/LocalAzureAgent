@@ -29,6 +29,11 @@ namespace LocalAgent.Runners.Task
         public bool Verbose => FromInputBool("verbose");
         public bool Quiet => FromInputBool("quiet");
 
+        public virtual string PathTo7Zip(PipelineContext context) {
+            
+            return Path.Combine(context.Variables.AgentVariables.AgentHomeDirectory, "7za.exe");
+        }
+
         public ArchiveFilesRunner(StepTask stepTask)
             : base(stepTask)
         {
@@ -39,9 +44,7 @@ namespace LocalAgent.Runners.Task
         {
             base.Run(context, stage, job);
 
-            var command =
-                new CommandLineCommandBuilder(Path.Combine(context.Variables.AgentVariables.AgentHomeDirectory,
-                    "7za.exe"));
+            var command = new CommandLineCommandBuilder(PathTo7Zip(context));
 
             command.Arg($"a {ArchiveFile}");
             command.ArgIf(Verbose, "-bb3");
@@ -51,7 +54,7 @@ namespace LocalAgent.Runners.Task
 
             command.Arg(IncludeRootFolder
                     ? $"{RootFolderOrFile}"
-                    : $"{RootFolderOrFile}\\");
+                    : $"{RootFolderOrFile}/*");
 
             var process = command.Compile(context, stage, job, StepTask);
 

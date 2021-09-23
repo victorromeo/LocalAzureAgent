@@ -86,29 +86,6 @@ jobs:
             publishLocation: 'Container'
 ";
 
-        //[Fact]
-        //public void Basic()
-        //{
-        //    IPipeline pipeline = new Pipeline()
-        //    {
-        //        Variables = new List<IVariableBase>()
-        //        {
-        //            new Variable()
-        //            {
-        //                Name = "abc", Value = "def"
-        //            },
-        //            new VariableGroup()
-        //            {
-        //                Group = "XYZ"
-        //            }
-        //        }
-        //    };
-
-        //    var yaml = new PipelineConverter().Serialize(pipeline);
-
-        //    var pipelineActual = new PipelineConverter().Deserialize(yaml);
-        //}
-
         [Fact]
         public void CheckTriggers()
         {

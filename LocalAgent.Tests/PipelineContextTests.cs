@@ -5,7 +5,7 @@ using Xunit;
 
 namespace LocalAgent.Tests
 {
-    public class BuildContextTests
+    public class PipelineContextTests
     {
         public AbstractConverter GetConverter()
         {

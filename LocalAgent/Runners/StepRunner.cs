@@ -28,7 +28,8 @@ namespace LocalAgent.Runners
         {
             return false;
         }
-        protected virtual bool RunProcess(ProcessStartInfo processInfo, 
+        
+        public virtual bool RunProcess(ProcessStartInfo processInfo, 
             DataReceivedEventHandler onData = null, 
             DataReceivedEventHandler onError = null)
         {
