@@ -49,11 +49,6 @@ namespace LocalAgent.Runners.Task
             GetLogger().Info($"Created {Task}");
         }
 
-        public override bool Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)
-        {
-            return PerformMsBuildCall(context, stage,job);
-        }
-
         public string GetMsBuild(string version)
         {
             List<string> searchPaths = new()
@@ -91,7 +86,7 @@ namespace LocalAgent.Runners.Task
             return null;
         }
 
-        protected bool PerformMsBuildCall(PipelineContext context, IStageExpectation stage, IJobExpectation job)
+        public override bool Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)
         {
             var msBuildPath = GetMsBuild(MsBuildVersion);
 
@@ -117,7 +112,7 @@ namespace LocalAgent.Runners.Task
                 if (Clean)
                 {
                     var cleanTarget = buildTargets[index];
-                    var command = new CommandLineCommandBuilder("{msBuildPath}")
+                    var command = new CommandLineCommandBuilder(msBuildPath)
                         .Arg(cleanTarget)
                         .ArgIf(Clean, "/t:Clean")
                         .ArgIf(Platform, "/p:Platform=" + Platform)
