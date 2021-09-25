@@ -84,5 +84,21 @@ jobs:
 
             var actual = PipelineContext.Deserialize(test);
         }
+
+        [Fact]
+        public void Deserialize_StepTemplate()
+        {
+            var test = @"
+jobs:
+- template: test.yml
+  parameters:
+  - name: Mini
+    type: string
+    values: echo ""Hello World""
+
+            ";
+
+            var actual = PipelineContext.Deserialize(test);  
+        }
     }
 }

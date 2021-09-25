@@ -1,12 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization.NodeDeserializers;
 
 namespace LocalAgent.Serializers
-{ 
+{
+    public class OtherTagResolver : INodeTypeResolver
+    {
+        public bool Resolve(NodeEvent nodeEvent, ref Type currentType)
+        {
+            if (nodeEvent is Scalar scalar) {
+                var value = scalar.Value;
+            }
+
+            return false;
+        }
+    }
+
     public class AbstractConverter
     {
         private readonly INamingConvention _namingConvention;
@@ -32,6 +45,7 @@ namespace LocalAgent.Serializers
                 .WithNodeDeserializer(
                     inner => new AbstractNodeNodeTypeResolver(inner,_resolvers.ToArray()),
                     s => s.InsteadOf<ObjectNodeDeserializer>())
+                .WithNodeTypeResolver(new OtherTagResolver())
                 .Build();
 
             T instance = builder.Deserialize<T>(yaml);

@@ -97,5 +97,18 @@ namespace LocalAgent.Models
         public IList<IVariableExpectation> Variables { get; set; }
     }
 
+    public class JobTemplateReference : Expectation, IJobExpectation 
+    {
+        [JsonProperty("template")]
+        public string Template {get;set;}
 
+        [JsonProperty("displayName")]
+        public string DisplayName { get; set; }
+        
+        [JsonProperty("variables")]
+        public IList<IVariableExpectation> Variables { get; set; }
+    
+        [JsonProperty("Parameters")]
+        public IList<IParameterExpectation> Parameters { get;set; }
+    }
 }

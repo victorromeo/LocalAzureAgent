@@ -174,23 +174,36 @@ namespace LocalAgent
             var converter = new AbstractConverter();
             converter.AddResolver<ExpectationTypeResolver<IVariableExpectation>>()
                 .AddMapping<Variable>(nameof(Variable.Name))
-                .AddMapping<VariableGroup>(nameof(VariableGroup.Group));
+                .AddMapping<VariableGroup>(nameof(VariableGroup.Group))
+                .AddMapping<VariableTemplateReference>(nameof(VariableTemplateReference.Template));
 
             converter.AddResolver<AggregateExpectationTypeResolver<IVariableExpectation>>();
 
+            // Instructions on how to deserialize job records
             converter.AddResolver<ExpectationTypeResolver<IJobExpectation>>()
                 .AddMapping<JobStandard>(nameof(JobStandard.Job))
-                .AddMapping<JobDeployment>(nameof(JobDeployment.Deployment));
+                .AddMapping<JobDeployment>(nameof(JobDeployment.Deployment))
+                .AddMapping<JobTemplateReference>(nameof(JobTemplateReference.Template));
 
+            // Instructions on how to deserialize stage records
             converter.AddResolver<ExpectationTypeResolver<IStageExpectation>>()
-                .AddMapping<Stages>(nameof(Stages.Jobs));
+                .AddMapping<Stages>(nameof(Stages.Jobs))
+                .AddMapping<StageTemplateReference>(nameof(StageTemplateReference.Template));
 
+            // Instructions on how to deserialize step records
             converter.AddResolver<ExpectationTypeResolver<IStepExpectation>>()
                 .AddMapping<StepTask>(nameof(StepTask.Task))
                 .AddMapping<StepScript>(nameof(StepScript.Script))
                 .AddMapping<StepCheckout>(nameof(StepCheckout.Checkout))
                 .AddMapping<StepPowershell>(nameof(StepPowershell.Powershell))
-                .AddMapping<StepBash>(nameof(StepBash.Bash));
+                .AddMapping<StepBash>(nameof(StepBash.Bash))
+                .AddMapping<StepTemplateReference>(nameof(StepTemplateReference.Template));
+
+            // Instructions on how to deserialize parameter records
+            converter.AddResolver<ExpectationTypeResolver<IParameterExpectation>>()
+                .AddMapping<ParameterString>(nameof(ParameterString.Name));
+
+            converter.AddResolver<AggregateExpectationTypeResolver<IParameterExpectation>>();
 
             return converter.Deserializer<Pipeline>(ymlString);
         }

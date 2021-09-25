@@ -1,4 +1,5 @@
-﻿using LocalAgent.Serializers;
+﻿using System.Collections.Generic;
+using LocalAgent.Serializers;
 using Newtonsoft.Json;
 
 namespace LocalAgent.Models
@@ -21,5 +22,14 @@ namespace LocalAgent.Models
     {
         [JsonProperty("group")]
         public string Group { get; set; }
+    }
+
+    public partial class VariableTemplateReference : Expectation, IVariableExpectation 
+    {
+        [JsonProperty("template")]
+        public string Template { get;set; }
+
+        [JsonProperty("parameters")]
+        public IList<IParameterExpectation> Parameters { get; set; }
     }
 }

@@ -160,9 +160,14 @@ namespace LocalAgent
             if (job is JobStandard jobStandard)
             {
                 return jobStandard.Steps;
-            } else if (job is JobDeployment jobDeployment)
+            } 
+            else if (job is JobDeployment jobDeployment)
             {
                 return jobDeployment.Strategy.RunOnce.Deploy.Steps;
+            } 
+            else if (job is JobTemplateReference jobTemplateReference) 
+            {
+                throw new NotImplementedException();
             }
 
             return new List<IStepExpectation>();
