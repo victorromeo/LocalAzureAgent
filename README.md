@@ -10,6 +10,34 @@ The built utility is suitable for one hit compilation as a command line utility,
 
 - It is assumed that the build always runs upon the local machine, where local means the same server as the source code.  There is no specific reason why this must be enforced, but it is the philosophy.  If intend to build off the current machine, use a real Azure DevOps build agent. 
 - When running the utility, its is advised to not build into the source code directory. Whilst there is no limitation preventing this, the intent is to support continuous builds whenever the source code is modified.  As a result, the build typically gets built away from the source code folder, inside a separate "work" folder.  This replicates the behaviour also of Azure Dev Ops build agents.
+- When a build is initiated, the source code is first copied into the work folder, then the build commences, by executing the supplied yaml
+- Standard Azure DevOps predefined variables are supported, albeit to a limited extent due to the change in context
+
+## Supported Azure DevOps yaml functions
+
+- Elements
+  - Deploy
+  - DeployStep
+  - Inputs
+  - Job
+  - JobStep
+  - Stage
+  - StageJob
+  - Step
+  - Strategy
+  - Variable
+  - Template
+  - Workspace
+- Task runners
+  - ArchiveFiles
+  - Batch 
+  - CopyFiles
+  - DotnetCli
+  - ExtractFiles
+  - MSBuild
+  - Powershell
+  - PublishBuildArtefacts
+  - VSTest
 
 ## Build
 
