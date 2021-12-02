@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using LocalAgent.Models;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
@@ -34,7 +35,7 @@ namespace LocalAgent.Serializers
                 return false;
             }
 
-            // can any of the registered discrimaintors deal with the abstract type?
+            // can any of the registered discriminators deal with the abstract type?
             var supportedTypes = typeDiscriminators.Where(t => t.BaseType == expectedType);
             if (!supportedTypes.Any())
             {
@@ -64,7 +65,13 @@ namespace LocalAgent.Serializers
 
             // now continue by re-emitting parsing events
             buffer.Reset();
-            return original.Deserialize(buffer, actualType, nestedObjectDeserializer, out value);
+            if (typeof(IBufferDeserializer).IsAssignableFrom(actualType)) {
+                var instance = (IBufferDeserializer) Activator.CreateInstance(actualType);
+                value = instance.DeserializeBuffer(buffer);
+                return value != null;
+            } else {
+                return original.Deserialize(buffer, actualType, nestedObjectDeserializer, out value);
+            }
         }
 
         private static Type CheckWithDiscriminators(Type expectedType, IEnumerable<ITypeDiscriminator> supportedTypes, ParsingEventBuffer buffer)

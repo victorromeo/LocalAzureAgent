@@ -73,18 +73,18 @@ namespace LocalAgent
 
         private void CreateFolderStructure()
         {
-            Logger.Info($"Creating Work Folders: {Variables.WorkFolderBase}");
+            Logger.Info($"Creating Work Folders: {Variables.Eval(Variables.WorkFolderBase,null,null,null)}");
             new FileUtils().CreateFolder(Variables[VariableNames.BuildSourcesDirectory]);
             new FileUtils().CreateFolder(Variables[VariableNames.BuildArtifactStagingDirectory]);
             new FileUtils().CreateFolder(Variables[VariableNames.BuildBinariesDirectory]);
 
-            Logger.Info($"Creating Temp Folder: {Variables[VariableNames.AgentTempDirectory]}");
+            Logger.Info($"Creating Temp Folder: {Variables.Eval(Variables[VariableNames.AgentTempDirectory],null,null,null)}");
             new FileUtils().CreateFolder(Variables[VariableNames.AgentTempDirectory]);
         }
 
         private void CleanWorkFolder()
         {
-            Logger.Info($"Cleaning Work Folders: {Variables.WorkFolderBase}");
+            Logger.Info($"Cleaning Work Folders: {Variables.Eval(Variables.WorkFolderBase,null,null,null)}");
             new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildSourcesDirectory]);
             new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildArtifactStagingDirectory]);
             new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildBinariesDirectory]);
@@ -175,7 +175,8 @@ namespace LocalAgent
             converter.AddResolver<ExpectationTypeResolver<IVariableExpectation>>()
                 .AddMapping<Variable>(nameof(Variable.Name))
                 .AddMapping<VariableGroup>(nameof(VariableGroup.Group))
-                .AddMapping<VariableTemplateReference>(nameof(VariableTemplateReference.Template));
+                .AddMapping<VariableTemplateReference>(nameof(VariableTemplateReference.Template))
+                .AddDefaultMapping<VariableDefaultDeserializer>();
 
             converter.AddResolver<AggregateExpectationTypeResolver<IVariableExpectation>>();
 
@@ -202,6 +203,10 @@ namespace LocalAgent
             // Instructions on how to deserialize parameter records
             converter.AddResolver<ExpectationTypeResolver<IParameterExpectation>>()
                 .AddMapping<ParameterString>(nameof(ParameterString.Name));
+
+            converter.AddResolver<ExpectationTypeResolver<IPoolExpectation>>()
+                .AddMapping<Pool>(nameof(Pool.Name))
+                .AddMapping<PoolVmImage>(nameof(PoolVmImage.VmImage));
 
             converter.AddResolver<AggregateExpectationTypeResolver<IParameterExpectation>>();
 

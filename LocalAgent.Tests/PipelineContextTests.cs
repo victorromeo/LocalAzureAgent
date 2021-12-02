@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using FluentAssertions;
 using LocalAgent.Models;
 using LocalAgent.Serializers;
 using Xunit;
@@ -7,22 +9,6 @@ namespace LocalAgent.Tests
 {
     public class PipelineContextTests
     {
-        public AbstractConverter GetConverter()
-        {
-            var converter = new AbstractConverter();
-            converter.AddResolver<ExpectationTypeResolver<IVariableExpectation>>()
-                .AddMapping<Variable>(nameof(Variable.Name))
-                .AddMapping<VariableGroup>(nameof(VariableGroup.Group));
-
-            converter.AddResolver<AggregateExpectationTypeResolver<IVariableExpectation>>();
-
-            converter.AddResolver<ExpectationTypeResolver<IJobExpectation>>()
-                .AddMapping<JobStandard>(nameof(JobStandard.Job));
-
-            return converter;
-        }
-
-
         [Fact]
         public void Deserialize_TriggerOnly()
         {
@@ -46,6 +32,29 @@ variables:
 ";
 
             var actual = PipelineContext.Deserialize(test);
+            Assert.Equal(2, actual.Variables.Count);
+            ((Variable) actual.Variables[0]).Name.Should().Be("solution");
+            ((Variable) actual.Variables[0]).Value.Should().Be("**/*.sln");
+            ((Variable) actual.Variables[1]).Name.Should().Be("buildPlatform");
+            ((Variable) actual.Variables[1]).Value.Should().Be("Any CPU");
+        }
+
+        [Fact]
+        public void Deserialize_VariablesScalarOnly()
+        {
+            var test = @"
+variables:
+- solution : '**/*.sln'
+- buildPlatform : 'Any CPU'
+";
+
+            var actual = PipelineContext.Deserialize(test);
+            Assert.Equal(2, actual.Variables.Count);
+
+            ((Variable) actual.Variables[0]).Name.Should().Be("solution");
+            ((Variable) actual.Variables[0]).Value.Should().Be("**/*.sln");
+            ((Variable) actual.Variables[1]).Name.Should().Be("buildPlatform");
+            ((Variable) actual.Variables[1]).Value.Should().Be("Any CPU");
         }
 
         [Fact]

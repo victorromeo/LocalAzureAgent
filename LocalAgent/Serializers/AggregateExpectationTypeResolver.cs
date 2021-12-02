@@ -11,6 +11,7 @@ namespace LocalAgent.Serializers
         public const string TargetKey = nameof(AggregateExpectation.SegmentWith);
         private readonly string _targetKey;
         private readonly Dictionary<string, Type> _typeLookup;
+        private Type _defaultType;
         private readonly INamingConvention _namingConvention;
 
         public AggregateExpectationTypeResolver(INamingConvention namingConvention)
@@ -27,6 +28,12 @@ namespace LocalAgent.Serializers
             where T : TBaseInterface
         {
             _typeLookup.Add(_namingConvention.Apply(name), typeof(T));
+            return this;
+        }
+
+        public AggregateExpectationTypeResolver<TBaseInterface> AddDefaultMapping<T>()
+        {
+            _defaultType = typeof(T);
             return this;
         }
 
@@ -68,6 +75,10 @@ namespace LocalAgent.Serializers
             if (_typeLookup.TryGetValue(value, out var childType))
             {
                 return childType;
+            }
+
+            if (_defaultType != null) {
+                return _defaultType;
             }
 
             var known = string.Join(",", _typeLookup.Keys.ToList());

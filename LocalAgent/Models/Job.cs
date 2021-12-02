@@ -50,7 +50,7 @@ namespace LocalAgent.Models
         public bool ContinueOnError { get; set; }
 
         [JsonProperty("pool")]
-        public Pool Pool { get; set; }
+        public IPoolExpectation Pool { get; set; }
 
         [JsonProperty("workspace")]
         public Workspace Workspace { get; set; }
@@ -85,7 +85,7 @@ namespace LocalAgent.Models
         public string Environment { get; set; }
 
         [JsonProperty("pool")]
-        public Pool Pool { get; set; }
+        public IPoolExpectation Pool { get; set; }
 
         [JsonProperty("workspace")]
         public Workspace Workspace { get; set; }

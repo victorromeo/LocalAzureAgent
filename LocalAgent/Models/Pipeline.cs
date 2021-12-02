@@ -22,5 +22,8 @@ namespace LocalAgent.Models
 
         [JsonProperty("name")]
         public string Name { get; set; }
+
+        [JsonProperty("pool")]
+        public IPoolExpectation Pool {get;set;}
     }
 }

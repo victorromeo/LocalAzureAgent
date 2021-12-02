@@ -14,7 +14,7 @@ namespace LocalAgent.Utilities
             var discoverPath = Repository.Discover(path);
 
             return discoverPath != null 
-                ? new Repository()
+                ? new Repository(discoverPath)
                 : null;
         }
 

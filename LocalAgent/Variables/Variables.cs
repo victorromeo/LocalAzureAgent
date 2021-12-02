@@ -91,6 +91,18 @@ namespace LocalAgent.Variables
                     value ?? DateTime.UtcNow.ToString("YYMMDD");
         }
 
+        public string GetPath(string relativeBase, string path) {
+            if (Directory.Exists(path)) {
+                return path;
+            } 
+
+            if (Path.IsPathRooted(path)) {
+                return path;
+            } 
+
+            return Path.Combine(relativeBase, path);
+        }
+
         public IVariables Load(PipelineOptions options)
         {
             SourcePath = Path.Combine(Environment.CurrentDirectory,
@@ -102,7 +114,7 @@ namespace LocalAgent.Variables
 
             AgentVariables = new AgentVariables()
             {
-                AgentBuildDirectory = Path.Combine(Environment.CurrentDirectory, options.AgentBuildDirectory ?? string.Empty),
+                AgentBuildDirectory = options.AgentBuildDirectory ?? string.Empty, // GetPath(Environment.CurrentDirectory, options.AgentBuildDirectory ?? string.Empty),
                 AgentEntryFolder = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location),
                 AgentHomeDirectory = new FileInfo(Assembly.GetExecutingAssembly().Location).DirectoryName,
                 AgentId = options.AgentId,
@@ -113,7 +125,7 @@ namespace LocalAgent.Variables
                 AgentOs = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
                 AgentOsArchitecture = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString(),
                 AgentTempDirectory = options.AgentTempDirectory,
-                AgentWorkFolder = Path.Combine(Environment.CurrentDirectory,options.AgentWorkFolder)
+                AgentWorkFolder = options.AgentWorkFolder // GetPath(Environment.CurrentDirectory, options.AgentWorkFolder)
             };
 
             WorkFolderBase = Path.Combine(AgentVariables.AgentWorkFolder, AgentVariables.AgentId.ToString());

@@ -181,6 +181,66 @@ jobs:
             converter.AddResolver<ExpectationTypeResolver<IJobExpectation>>()
                 .AddMapping<JobStandard>(nameof(JobStandard.Job));
 
+            converter.AddResolver<ExpectationTypeResolver<IPoolExpectation>>()
+                .AddMapping<Pool>(nameof (Pool.Name))
+                .AddMapping<PoolVmImage>(nameof(PoolVmImage.VmImage));
+
+            var yaml = converter.Serialize<Pipeline>(pipeline);
+            var model2 = converter.Deserializer<Pipeline>(yaml);
+
+        }
+
+        [Fact]
+        public void CheckJobs_VMPool()
+        {
+            var pipeline = new Pipeline()
+            {
+                Jobs = new List<IJobExpectation>()
+                {
+
+                    //- deployment: buildProduct
+                    //  workspace:
+                    //    clean: all
+                    //  displayName: Build Product
+                    //  pool:
+                    //    name: $(BuildPoolName)
+                    //  environment: $(BuildEnvironmentAlias)
+                    //  strategy:
+                    //    runonce: blah
+
+                    new JobStandard()
+                    {
+                        Workspace = new Workspace()
+                        {
+                            Clean = "all",
+                        },
+                        DisplayName = "Build Product",
+                        Pool = new PoolVmImage()
+                        {
+                            VmImage = "windows-latest"
+                        },
+                        Strategy = new Strategy()
+                        {
+                            RunOnce = new RunOnce()
+                            { }
+                        }
+                    }
+                }
+            };
+
+            var converter = new AbstractConverter();
+            converter.AddResolver<ExpectationTypeResolver<IVariableExpectation>>()
+                .AddMapping<Variable>(nameof(Variable.Name))
+                .AddMapping<VariableGroup>(nameof(VariableGroup.Group));
+
+            converter.AddResolver<AggregateExpectationTypeResolver<IVariableExpectation>>();
+
+            converter.AddResolver<ExpectationTypeResolver<IJobExpectation>>()
+                .AddMapping<JobStandard>(nameof(JobStandard.Job));
+
+            converter.AddResolver<ExpectationTypeResolver<IPoolExpectation>>()
+                .AddMapping<Pool>(nameof (Pool.Name))
+                .AddMapping<PoolVmImage>(nameof(PoolVmImage.VmImage));
 
             var yaml = converter.Serialize<Pipeline>(pipeline);
             var model2 = converter.Deserializer<Pipeline>(yaml);
