@@ -46,7 +46,7 @@ namespace LocalAgent.Runners.Task
                 var sourceFolder = GetFolderAbsolutePath(SourceFolder, context, stage, job, StepTask);
                 var targetFolder = GetFolderAbsolutePath(TargetFolder, context, stage, job, StepTask);
 
-                var contents = context.Variables.Eval(Contents, stage?.Variables, job?.Variables, null);
+                var contents = context.Variables.Eval(Contents, context.Pipeline?.Variables, stage?.Variables, job?.Variables, null);
 
                 var files = new FileUtils().FindFiles(sourceFolder, contents);
 
@@ -76,6 +76,7 @@ namespace LocalAgent.Runners.Task
         private string GetFolderAbsolutePath(string path, PipelineContext context, IStageExpectation stage, IJobExpectation job, IStepExpectation step)
         {
             var folderPath = context.Variables.Eval(path, 
+                context.Pipeline?.Variables,
                 stage?.Variables,
                 job?.Variables,
                 null);

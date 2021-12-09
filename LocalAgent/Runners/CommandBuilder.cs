@@ -49,7 +49,8 @@ namespace LocalAgent.Runners
             IStageExpectation stage, IJobExpectation job, IStepExpectation step)
         {
             _compiled = context.Variables
-                .Eval(ToString(), 
+                .Eval(ToString(),
+                    context.Pipeline?.Variables,
                     stage?.Variables, 
                     job?.Variables, 
                     null);

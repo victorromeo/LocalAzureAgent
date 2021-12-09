@@ -68,9 +68,16 @@ namespace LocalAgent.Runners.Task
             _msBuildVersions ??= _msBuildPaths
                 .ToDictionary(i=>i,GetMsBuildVersion);
 
+            if (versionParts[0] == "" || versionParts[0].ToLower() == "latest") {
+                return _msBuildVersions
+                    .OrderByDescending(i=>i.Value)
+                    .Select(i=>i.Key)
+                    .FirstOrDefault();
+            }
+
             return _msBuildVersions
                 .Where(i => i.Value.StartsWith($"{versionParts[0]}."))
-                .OrderBy(i=>i.Value)
+                .OrderByDescending(i=>i.Value)
                 .Select(i=>i.Key)
                 .FirstOrDefault();
         }
@@ -95,10 +102,15 @@ namespace LocalAgent.Runners.Task
                 throw new Exception($"MSBuild version {MsBuildVersion} not found");
             }
 
+            var solutionParts = Solution.Split(";");
+            IList<string> patterns = new List<string>();
+            foreach (var solutionPart in solutionParts) {
+                string pattern = context.Variables.Eval(solutionPart, context.Pipeline.Variables, stage?.Variables, job?.Variables);
+                patterns.Add(pattern);
+            }
+
             var buildTargets = new FileUtils().FindFilesByPattern(context,
-                    context.Variables[VariableNames.BuildSourcesDirectory],
-                    Solution.Split(";")
-                );
+                    context.Variables[VariableNames.BuildSourcesDirectory], patterns);
 
             if (buildTargets.Count == 0)
             {
@@ -112,25 +124,25 @@ namespace LocalAgent.Runners.Task
                 if (Clean)
                 {
                     var cleanTarget = buildTargets[index];
-                    var command = new CommandLineCommandBuilder(msBuildPath)
-                        .Arg(cleanTarget)
+                    var command = new CommandLineCommandBuilder($"\"{msBuildPath}\"")
+                        .Arg($"\"{cleanTarget}\"")
                         .ArgIf(Clean, "/t:Clean")
-                        .ArgIf(Platform, "/p:Platform=" + Platform)
-                        .ArgIf(Configuration, "/p:Configuration=" + Configuration);
+                        .ArgIf(Platform, $"/p:Platform=\"{Platform}\"")
+                        .ArgIf(Configuration, $"/p:Configuration=\"{Configuration}\"");
 
                     var processInfo = command.Compile(context, stage, job, StepTask);
                     GetLogger().Info($"COMMAND: {processInfo.FileName} {processInfo.Arguments}");
 
                     ranToSuccess = RunProcess(processInfo);
-;               }
+                }
 
                 if (ranToSuccess)
                 {
                     var buildTarget = buildTargets[index];
-                    var command = new CommandLineCommandBuilder("{msBuildPath}")
-                        .Arg(buildTarget)
-                        .ArgIf(Platform, "/p:Platform=" + Platform)
-                        .ArgIf(Configuration, "/p:Configuration=" + Configuration);
+                    var command = new CommandLineCommandBuilder($"\"{msBuildPath}\"")
+                        .Arg($"\"{buildTarget}\"")
+                        .ArgIf(Platform, $"/p:Platform=\"{Platform}\"")
+                        .ArgIf(Configuration, $"/p:Configuration=\"{Configuration}\"");
 
                     var processInfo = command.Compile(context, stage, job, StepTask);
                     GetLogger().Info($"COMMAND: {processInfo.FileName} {processInfo.Arguments}");

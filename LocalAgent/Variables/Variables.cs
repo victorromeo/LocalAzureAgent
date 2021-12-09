@@ -31,14 +31,16 @@ namespace LocalAgent.Variables
         void ClearLookup();
 
         IDictionary<string, object> BuildLookup(
-            IList<IVariableExpectation> stageVariables,
-            IList<IVariableExpectation> jobVariables,
-            IList<IVariableExpectation> stepVariables);
+            IList<IVariableExpectation> pipelineVariables = null,
+            IList<IVariableExpectation> stageVariables = null,
+            IList<IVariableExpectation> jobVariables = null,
+            IList<IVariableExpectation> stepVariables = null);
 
         string Eval(string argument,
-            IList<IVariableExpectation> stageVariables,
-            IList<IVariableExpectation> jobVariables,
-            IList<IVariableExpectation> stepVariables);
+            IList<IVariableExpectation> pipelineVariable = null,
+            IList<IVariableExpectation> stageVariables = null,
+            IList<IVariableExpectation> jobVariables = null,
+            IList<IVariableExpectation> stepVariables = null);
     }
 
     public class VariableNames
@@ -178,9 +180,10 @@ namespace LocalAgent.Variables
         }
 
         public IDictionary<string, object> BuildLookup(
-            IList<IVariableExpectation> stageVariables,
-            IList<IVariableExpectation> jobVariables,
-            IList<IVariableExpectation> stepVariables)
+            IList<IVariableExpectation> pipelineVariables = null,
+            IList<IVariableExpectation> stageVariables = null,
+            IList<IVariableExpectation> jobVariables = null,
+            IList<IVariableExpectation> stepVariables = null)
         {
             var lookup = new Dictionary<string, object>()
             {
@@ -220,6 +223,13 @@ namespace LocalAgent.Variables
                 }
             }
 
+            if (pipelineVariables != null)
+            {
+                foreach (Variable v in pipelineVariables.OfType<Variable>())
+                {
+                    lookup[v.Name] = v.Value;
+                }
+            }
 
             if (stageVariables != null)
             {
@@ -254,11 +264,12 @@ namespace LocalAgent.Variables
         }
 
         public string Eval(string argument,
+            IList<IVariableExpectation> pipelineVariables = null,
             IList<IVariableExpectation> stageVariables = null,
             IList<IVariableExpectation> jobVariables = null,
             IList<IVariableExpectation> stepVariables = null)
         {
-            var substitutions = BuildLookup(stageVariables, jobVariables, stepVariables);
+            var substitutions = BuildLookup(stageVariables, jobVariables, stepVariables, pipelineVariables);
 
             string result = argument;
             var pattern = new Regex(@"(?:[$][{(]+)(.+?)(?:[})]+)+");

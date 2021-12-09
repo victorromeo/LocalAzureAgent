@@ -22,6 +22,7 @@ namespace LocalAgent.Runners.Base
             GetLogger().Info($"{_step.Script}");
 
             var script = context.Variables.Eval(_step.Script, 
+                context.Pipeline?.Variables,
                 stage?.Variables, 
                 job?.Variables, 
                 null);

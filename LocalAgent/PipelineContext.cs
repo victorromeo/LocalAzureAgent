@@ -64,8 +64,8 @@ namespace LocalAgent
         public PipelineContext Prepare()
         {
             CreateFolderStructure();
-            CleanWorkFolder();
-            CleanTempFolder();
+            // CleanWorkFolder();
+            // CleanTempFolder();
             CloneSourceToWorkFolder();
 
             return this;
@@ -73,18 +73,18 @@ namespace LocalAgent
 
         private void CreateFolderStructure()
         {
-            Logger.Info($"Creating Work Folders: {Variables.Eval(Variables.WorkFolderBase,null,null,null)}");
+            Logger.Info($"Creating Work Folders: {Variables.Eval(Variables.WorkFolderBase)}");
             new FileUtils().CreateFolder(Variables[VariableNames.BuildSourcesDirectory]);
             new FileUtils().CreateFolder(Variables[VariableNames.BuildArtifactStagingDirectory]);
             new FileUtils().CreateFolder(Variables[VariableNames.BuildBinariesDirectory]);
 
-            Logger.Info($"Creating Temp Folder: {Variables.Eval(Variables[VariableNames.AgentTempDirectory],null,null,null)}");
+            Logger.Info($"Creating Temp Folder: {Variables.Eval(Variables[VariableNames.AgentTempDirectory])}");
             new FileUtils().CreateFolder(Variables[VariableNames.AgentTempDirectory]);
         }
 
         private void CleanWorkFolder()
         {
-            Logger.Info($"Cleaning Work Folders: {Variables.Eval(Variables.WorkFolderBase,null,null,null)}");
+            Logger.Info($"Cleaning Work Folders: {Variables.Eval(Variables.WorkFolderBase)}");
             new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildSourcesDirectory]);
             new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildArtifactStagingDirectory]);
             new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildBinariesDirectory]);
@@ -93,6 +93,7 @@ namespace LocalAgent
         private void CloneSourceToWorkFolder()
         {
             Logger.Info($"Cloning source from: {Variables.SourcePath} to {Variables[VariableNames.BuildSourcesDirectory]}");
+            new FileUtils().ClearReadOnlyFlag(Variables[VariableNames.BuildSourcesDirectory]);
             new FileUtils().CloneFolder(Variables.SourcePath, Variables[VariableNames.BuildSourcesDirectory]);
         }
 

@@ -23,7 +23,9 @@ namespace LocalAgent.Runners
             {MSBuildRunner.Task, typeof(MSBuildRunner)},
             {PowershellRunner.Task,typeof(PowershellRunner)},
             {PublishBuildArtifactsRunner.Task, typeof(PublishBuildArtifactsRunner)},
-            {VSTestRunner.Task, typeof(VSTestRunner)}
+            {VSTestRunner.Task, typeof(VSTestRunner)},
+            {NuGetCommandRunner.Task, typeof(NuGetCommandRunner)},
+            {NuGetToolInstaller.Task, typeof(NuGetToolInstaller)}
         };
 
         private readonly Dictionary<Type, Type> _concreteRunners = new()

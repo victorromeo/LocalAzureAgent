@@ -26,7 +26,7 @@ namespace LocalAgent.Runners
             IStageExpectation stage, 
             IJobExpectation job)
         {
-            return false;
+            return true;
         }
         
         public virtual bool RunProcess(ProcessStartInfo processInfo, 

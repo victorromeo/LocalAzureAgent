@@ -100,6 +100,8 @@ namespace LocalAgent.Runners.Task
         }
 
         public override bool Run(PipelineContext context, IStageExpectation stage, IJobExpectation job) {
+            var success = base.Run(context, stage, job);
+
             var vsTestPath = GetVsTest(VsTestVersion);
 
             if (vsTestPath == null) {

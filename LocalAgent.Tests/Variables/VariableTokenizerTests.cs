@@ -47,7 +47,8 @@ namespace LocalAgent.Tests
             {
                 AgentVariables = new AgentVariables(),
                 BuildVariables = new BuildVariables(),
-            }.Eval(before,
+            }.Eval(before, 
+                null,
                 stageVariables, 
                 jobVariables, 
                 stepVariables);

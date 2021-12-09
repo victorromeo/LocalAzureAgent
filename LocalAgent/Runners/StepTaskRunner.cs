@@ -46,5 +46,16 @@ namespace LocalAgent.Runners
         {
             StepTask = stepTask;
         }
+
+        public override bool Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)
+        {
+            if (!StepTask.Enabled) {
+                Logger.Warn("Task disabled");
+                
+                return true;
+            }
+
+            return base.Run(context, stage, job);
+        }
     }
 }

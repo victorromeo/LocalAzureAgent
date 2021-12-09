@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using LocalAgent.Variables;
@@ -9,6 +10,8 @@ namespace LocalAgent.Utilities
 {
     public class FileUtils
     {
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
         public byte[] GetMd5HashBytes(string filePath)
         {
             using var md5 = MD5.Create();
@@ -93,8 +96,26 @@ namespace LocalAgent.Utilities
                 throw new ArgumentException($"Folder not found: '{path}'", nameof(path));
             }
 
+            // ReadOnly flags must be cleared before the folder content is deleted
+            ClearReadOnlyFlag(path);
+
             info.Delete(true);
             info.Create();
+        }
+
+        /// Recursive operation to clear Read Only flags from Files and Directories
+        public void ClearReadOnlyFlag(string path) {
+            Logger.Info($"Clearing ReadOnly flags in {path}");
+
+            new DirectoryInfo(path).GetDirectories("*", SearchOption.AllDirectories)
+                .ToList().ForEach(
+                    di => {
+                        di.Attributes &= ~FileAttributes.ReadOnly;
+                        di.GetFiles("*", SearchOption.TopDirectoryOnly)
+                            .ToList()
+                            .ForEach(fi => fi.IsReadOnly = false);
+                    }
+                );
         }
 
         // Creates a folder, and subfolders
