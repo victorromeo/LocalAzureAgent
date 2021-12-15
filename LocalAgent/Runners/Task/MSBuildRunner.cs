@@ -138,7 +138,7 @@ namespace LocalAgent.Runners.Task
 
                 if (status == StatusTypes.InProgress)
                 {
-                    var buildTarget = buildTargets[index];
+                    var buildTarget = buildTargets[index].ToPath();
                     var command = new CommandLineCommandBuilder($"\"{msBuildPath}\"")
                         .Arg($"\"{buildTarget}\"")
                         .ArgIf(Platform, $"/p:Platform=\"{Platform}\"")

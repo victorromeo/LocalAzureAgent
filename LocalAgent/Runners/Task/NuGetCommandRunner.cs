@@ -80,11 +80,11 @@ namespace LocalAgent.Runners.Task
                 status = StatusTypes.InProgress;
 
                 for (var index = 0; status == StatusTypes.InProgress && index < targets.Count; index++) {
-                    var restoreSolution = targets[index];
+                    var restoreSolution = targets[index].ToPath();
 
                     var command = new CommandLineCommandBuilder(nugetPath);
                     command.Arg(RestoreCommand)
-                        .ArgIf(restoreSolution, restoreSolution);
+                        .ArgIf(restoreSolution, $"\"{restoreSolution}\"");
                     var processInfo = command.Compile(context, stage, job, StepTask);
 
                     GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
