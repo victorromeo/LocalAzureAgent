@@ -62,7 +62,9 @@ namespace LocalAgent
             return status == StatusTypes.InProgress 
                 || status == StatusTypes.Complete
                 || status == StatusTypes.Skipped
-                || ((status == StatusTypes.Error || status == StatusTypes.Warning) && (job as JobStandard).ContinueOnError);
+                || (job is JobStandard 
+                    && (status == StatusTypes.Error || status == StatusTypes.Warning) 
+                    && (job as JobStandard).ContinueOnError);
         }
 
         private static StatusTypes RunPipeline(PipelineContext context)
@@ -173,24 +175,27 @@ namespace LocalAgent
         }
 
         private static void LogStatus(StatusTypes status, IStepExpectation step) {
+            var stepName = string.IsNullOrEmpty(step.DisplayName) 
+                ? string.Empty
+                : $"'{step.DisplayName}' ";
             switch(status) {
                 case StatusTypes.Init:
-                    Logger.Info($"STEP: '{step.DisplayName}' initialized");
+                    Logger.Info($"STEP: {stepName}initialized");
                     break;
                 case StatusTypes.InProgress:
-                    Logger.Info($"STEP: '{step.DisplayName}' in progress");
+                    Logger.Info($"STEP: {stepName}in progress");
                     break;
                 case StatusTypes.Skipped:
-                    Logger.Info($"STEP: '{step.DisplayName}' skipped");
+                    Logger.Info($"STEP: {stepName}skipped");
                     break;
                 case StatusTypes.Warning:
-                    Logger.Info($"STEP: '{step.DisplayName}' completed with Warning");
+                    Logger.Info($"STEP: {stepName}completed with Warning");
                     break;
                 case StatusTypes.Error:
-                    Logger.Info($"STEP: '{step.DisplayName}' failed");
+                    Logger.Info($"STEP: {stepName}failed");
                     break;
                 case StatusTypes.Complete:
-                    Logger.Info($"STEP: '{step.DisplayName}' succeeded");
+                    Logger.Info($"STEP: {stepName}succeeded");
                     break;
             } 
         }

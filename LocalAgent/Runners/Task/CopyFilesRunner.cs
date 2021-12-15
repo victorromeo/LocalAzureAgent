@@ -39,6 +39,7 @@ namespace LocalAgent.Runners.Task
 
         public override StatusTypes RunInternal(PipelineContext context, IStageExpectation stage, IJobExpectation job)
         {
+            var status = StatusTypes.InProgress;
             try
             {
                 var sourceFolder = GetFolderAbsolutePath(SourceFolder, context, stage, job, StepTask);
@@ -65,10 +66,10 @@ namespace LocalAgent.Runners.Task
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                return StatusTypes.Error;
+                status = StatusTypes.Error;
             }
 
-            return StatusTypes.Complete;
+            return status;
         }
 
         private string GetFolderAbsolutePath(string path, PipelineContext context, IStageExpectation stage, IJobExpectation job, IStepExpectation step)

@@ -92,8 +92,6 @@ namespace LocalAgent.Runners.Task
                     // Execute the command
                     status = RunProcess(processInfo);
                 }
-
-                status = StatusTypes.Complete;
             }
 
             return status;

@@ -34,7 +34,7 @@ namespace LocalAgent.Runners
             DataReceivedEventHandler onError = null)
         {
             Process process = null;
-            StatusTypes ranToSuccess = StatusTypes.InProgress;
+            StatusTypes status = StatusTypes.InProgress;
 
             try
             {
@@ -55,7 +55,7 @@ namespace LocalAgent.Runners
                     if (e.Data != null)
                     {
                         Logger.Error(e.Data ?? string.Empty);
-                        ranToSuccess = StatusTypes.Error;
+                        status = StatusTypes.Error;
                     }
                 };
                 if (onError != null) process.ErrorDataReceived += onError;
@@ -64,14 +64,18 @@ namespace LocalAgent.Runners
                 process.WaitForExit();
 
                 var exitCode = process.ExitCode;
-                Logger.Info($"Exit Code: {exitCode}");
 
-                ranToSuccess = exitCode == 0 ? StatusTypes.Complete : StatusTypes.Warning;
+                if (exitCode == 0) {
+                    Logger.Info($"Exit Code: {exitCode}");
+                } else {
+                    status = StatusTypes.Warning;
+                    Logger.Warn($"Exit Code: {exitCode}");
+                }
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                ranToSuccess = StatusTypes.Error;
+                status = StatusTypes.Error;
             }
             finally
             {
@@ -79,7 +83,7 @@ namespace LocalAgent.Runners
                     process.Close();
             }
 
-            return ranToSuccess;
+            return status;
         }
     }
 }

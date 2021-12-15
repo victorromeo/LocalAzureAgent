@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using CommandLine;
@@ -25,13 +26,18 @@ namespace LocalAgent
         {
             // Declare logging
             var config = new LoggingConfiguration();
-            ConsoleTarget logConsole;
-            logConsole = new ConsoleTarget(nameof(logConsole));
+            ConsoleTarget logConsole = new ConsoleTarget(nameof(logConsole));
+
+            var logFilePath = Path.Join(Environment.CurrentDirectory,$"agent_{DateTime.Now.ToString("yyMMddhhmmss")}.log");
+            FileTarget logFile = new FileTarget(nameof(logFile));
+            logFile.FileName = logFilePath;
 
             config.AddRule(LogLevel.Info, LogLevel.Fatal, logConsole);
+            config.AddRule(LogLevel.Info, LogLevel.Fatal, logFile);
             LogManager.Configuration = config;
 
             Logger.Info("Starting");
+            Logger.Info($"Log File {logFilePath}");
 
             Parser.Default.ParseArguments<PipelineOptions>(args)
                 .WithParsed(o =>

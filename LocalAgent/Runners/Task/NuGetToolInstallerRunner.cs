@@ -44,7 +44,6 @@ namespace LocalAgent.Runners.Task
                 status = StatusTypes.InProgress;
                 wc.DownloadFile(downloadUrl, nugetPath);
 
-                status = StatusTypes.Complete;
             } catch (Exception ex) {
                 GetLogger().Error(ex, "Failed to install NuGet");
                 status = StatusTypes.Error;
