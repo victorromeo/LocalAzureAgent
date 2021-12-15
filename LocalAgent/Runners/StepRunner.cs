@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using LocalAgent.Models;
 using NLog;
 
@@ -29,6 +30,17 @@ namespace LocalAgent.Runners
             return StatusTypes.InProgress;
         }
         
+        protected bool HasError(string message) {
+            Regex pattern = new Regex(@"\b(error)\b\s\b(ASPRUNTIME)[:]");
+            Regex pattern2 = new Regex(@"\b(error)\b\s\b(CS|MSB)[0-9]{4}[:]");
+            return pattern.IsMatch(message) || pattern2.IsMatch(message);
+        }
+
+        protected bool HasWarning(string message) {
+            Regex pattern = new Regex(@"\b(warning)\b\s\b(CS|MSB)[0-9]{4}[:]");
+            return pattern.IsMatch(message);
+        }
+
         public virtual StatusTypes RunProcess(ProcessStartInfo processInfo, 
             DataReceivedEventHandler onData = null, 
             DataReceivedEventHandler onError = null)
@@ -46,7 +58,16 @@ namespace LocalAgent.Runners
                 process.EnableRaisingEvents = true;
                 process.OutputDataReceived += (sender, e) =>
                 {
-                    Logger.Info(e.Data ?? string.Empty);
+                    if (e.Data != null) {
+                        if (HasError(e.Data)) {
+                            Logger.Error(e.Data);
+                        } else if (HasWarning(e.Data)) {
+                            Logger.Warn(e.Data);
+                        } else {
+                            Logger.Info(e.Data);
+                        }
+                    }
+                   
                 };
                 if (onData != null) process.OutputDataReceived += onData;
                 process.BeginOutputReadLine();
