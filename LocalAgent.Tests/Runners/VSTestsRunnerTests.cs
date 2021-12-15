@@ -29,7 +29,7 @@ namespace LocalAgent.Tests
 
             runner.Setup(i =>i.RunProcess(It.IsAny<ProcessStartInfo>(),null,null))
                 .Callback(callback)
-                .Returns(true)
+                .Returns(StatusTypes.InProgress)
                 .Verifiable();
 
             return runner;

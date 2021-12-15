@@ -40,10 +40,8 @@ namespace LocalAgent.Runners.Task
             GetLogger().Info($"Created {Task}");
         }
 
-        public override bool Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)
+        public override StatusTypes RunInternal(PipelineContext context, IStageExpectation stage, IJobExpectation job)
         {
-            base.Run(context, stage, job);
-
             var command = new CommandLineCommandBuilder(PathTo7Zip(context));
 
             command.Arg($"a {ArchiveFile}");

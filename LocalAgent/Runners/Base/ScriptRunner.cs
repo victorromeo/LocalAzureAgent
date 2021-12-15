@@ -16,7 +16,7 @@ namespace LocalAgent.Runners.Base
             GetLogger().Info($"Created {nameof(ScriptRunner)}");
         }
 
-        public override bool Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)
+        public override StatusTypes Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)
         {
             base.Run(context, stage, job);
             GetLogger().Info($"{_step.Script}");

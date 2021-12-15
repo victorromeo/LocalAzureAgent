@@ -22,19 +22,19 @@ namespace LocalAgent.Runners
         /// <param name="stage">Stage Context for the execution of the Step</param>
         /// <param name="job">Job Context for the execution of the Step</param>
         /// <returns>Returns True, if runs to success, else False</returns>
-        public virtual bool Run(PipelineContext context, 
+        public virtual StatusTypes Run(PipelineContext context, 
             IStageExpectation stage, 
             IJobExpectation job)
         {
-            return true;
+            return StatusTypes.InProgress;
         }
         
-        public virtual bool RunProcess(ProcessStartInfo processInfo, 
+        public virtual StatusTypes RunProcess(ProcessStartInfo processInfo, 
             DataReceivedEventHandler onData = null, 
             DataReceivedEventHandler onError = null)
         {
             Process process = null;
-            bool ranToSuccess;
+            StatusTypes ranToSuccess = StatusTypes.InProgress;
 
             try
             {
@@ -55,7 +55,7 @@ namespace LocalAgent.Runners
                     if (e.Data != null)
                     {
                         Logger.Error(e.Data ?? string.Empty);
-                        ranToSuccess = false;
+                        ranToSuccess = StatusTypes.Error;
                     }
                 };
                 if (onError != null) process.ErrorDataReceived += onError;
@@ -65,12 +65,13 @@ namespace LocalAgent.Runners
 
                 var exitCode = process.ExitCode;
                 Logger.Info($"Exit Code: {exitCode}");
-                ranToSuccess = exitCode == 0;
+
+                ranToSuccess = exitCode == 0 ? StatusTypes.Complete : StatusTypes.Warning;
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                ranToSuccess = false;
+                ranToSuccess = StatusTypes.Error;
             }
             finally
             {

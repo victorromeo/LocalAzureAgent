@@ -96,6 +96,8 @@ namespace LocalAgent.Utilities
                 throw new ArgumentException($"Folder not found: '{path}'", nameof(path));
             }
 
+            var paths = Directory.EnumerateDirectories(path);
+
             // ReadOnly flags must be cleared before the folder content is deleted
             ClearReadOnlyFlag(path);
 
@@ -161,5 +163,8 @@ namespace LocalAgent.Utilities
             });
         }
 
+        public static string ToPath(this string path) {
+            return path.Replace('\\',Path.DirectorySeparatorChar).Replace('/',Path.DirectorySeparatorChar);
+        }
     }
 }

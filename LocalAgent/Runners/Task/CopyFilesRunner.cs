@@ -37,10 +37,8 @@ namespace LocalAgent.Runners.Task
             GetLogger().Info($"Created {Task}");
         }
 
-        public override bool Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)
+        public override StatusTypes RunInternal(PipelineContext context, IStageExpectation stage, IJobExpectation job)
         {
-            base.Run(context, stage, job);
-
             try
             {
                 var sourceFolder = GetFolderAbsolutePath(SourceFolder, context, stage, job, StepTask);
@@ -67,10 +65,10 @@ namespace LocalAgent.Runners.Task
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                return false;
+                return StatusTypes.Error;
             }
 
-            return true;
+            return StatusTypes.Complete;
         }
 
         private string GetFolderAbsolutePath(string path, PipelineContext context, IStageExpectation stage, IJobExpectation job, IStepExpectation step)

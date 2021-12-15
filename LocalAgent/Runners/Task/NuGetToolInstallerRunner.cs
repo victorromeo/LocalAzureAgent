@@ -2,6 +2,10 @@ using System.Diagnostics;
 using System.IO;
 using LocalAgent.Models;
 using NLog;
+using System.Net;
+using LocalAgent.Variables;
+using LocalAgent.Utilities;
+using System;
 
 namespace LocalAgent.Runners.Task
 {
@@ -23,30 +27,30 @@ namespace LocalAgent.Runners.Task
             GetLogger().Info($"Created {Task}");
         }
 
-        public override bool Run(PipelineContext context, 
+        public override StatusTypes RunInternal(PipelineContext context, 
             IStageExpectation stage, 
             IJobExpectation job)
         {
-            return base.Run(context, stage, job);
+            var status = StatusTypes.Init;
 
-            // var workingDir = context.Variables[WorkingDirectory];
+            try {
+                var downloadUrl = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe";
 
-            // workingDir = string.IsNullOrWhiteSpace(workingDir) 
-            //              || !new DirectoryInfo(workingDir).Exists
-            //     ? string.Empty
-            //     : $"cd /d {WorkingDirectory} &&";
+                var installPath = context.Variables[VariableNames.AgentHomeDirectory];
+                var nugetPath = $"{installPath}/nuget.exe".ToPath();
 
-            // var command = context.Variables[$"/C {workingDir} {Filename} {Arguments}"];
+                WebClient wc = new WebClient();
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                status = StatusTypes.InProgress;
+                wc.DownloadFile(downloadUrl, nugetPath);
 
-            // var processInfo = new ProcessStartInfo("cmd.exe", command)
-            // {
-            //     CreateNoWindow = true,
-            //     UseShellExecute = false,
-            //     RedirectStandardOutput = true,
-            //     RedirectStandardError = true,
-            // };
+                status = StatusTypes.Complete;
+            } catch (Exception ex) {
+                GetLogger().Error(ex, "Failed to install NuGet");
+                status = StatusTypes.Error;
+            } 
 
-            // return RunProcess(processInfo);
+            return status;
         }
     }
 }

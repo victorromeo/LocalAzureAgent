@@ -37,5 +37,10 @@ namespace LocalAgent.Runners.Task
         {
             GetLogger().Info($"Created {Task}");
         }
+
+        public override StatusTypes RunInternal(PipelineContext context, IStageExpectation stage, IJobExpectation job)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

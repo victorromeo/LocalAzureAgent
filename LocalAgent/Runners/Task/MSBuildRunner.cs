@@ -93,7 +93,7 @@ namespace LocalAgent.Runners.Task
             return null;
         }
 
-        public override bool Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)
+        public override StatusTypes RunInternal(PipelineContext context, IStageExpectation stage, IJobExpectation job)
         {
             var msBuildPath = GetMsBuild(MsBuildVersion);
 
@@ -117,9 +117,9 @@ namespace LocalAgent.Runners.Task
                 throw new Exception("No build targets found.");
             }
 
-            bool ranToSuccess = true;
+            var status = StatusTypes.InProgress;
 
-            for (var index = 0; ranToSuccess & index < buildTargets.Count; index++)
+            for (var index = 0; status == StatusTypes.InProgress & index < buildTargets.Count; index++)
             {
                 if (Clean)
                 {
@@ -133,10 +133,10 @@ namespace LocalAgent.Runners.Task
                     var processInfo = command.Compile(context, stage, job, StepTask);
                     GetLogger().Info($"COMMAND: {processInfo.FileName} {processInfo.Arguments}");
 
-                    ranToSuccess = RunProcess(processInfo);
+                    status = RunProcess(processInfo);
                 }
 
-                if (ranToSuccess)
+                if (status == StatusTypes.InProgress)
                 {
                     var buildTarget = buildTargets[index];
                     var command = new CommandLineCommandBuilder($"\"{msBuildPath}\"")
@@ -147,11 +147,11 @@ namespace LocalAgent.Runners.Task
                     var processInfo = command.Compile(context, stage, job, StepTask);
                     GetLogger().Info($"COMMAND: {processInfo.FileName} {processInfo.Arguments}");
 
-                    ranToSuccess = RunProcess(processInfo);
+                    status = RunProcess(processInfo);
                 }
             }
 
-            return ranToSuccess;
+            return status;
         }
 
         internal List<string> GetBuildTargets(PipelineContext context)

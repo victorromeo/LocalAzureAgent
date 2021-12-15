@@ -20,13 +20,12 @@ namespace LocalAgent.Tests
             runner.Setup(i => i.GetLogger())
                 .Returns(new NullLogger(new LogFactory()));
 
-
             runner.Setup(i=>i.PathTo7Zip(It.IsAny<PipelineContext>()))
                 .Returns(@"C:\pathTo7Zip\7Zip.exe");
 
             runner.Setup(i =>i.RunProcess(It.IsAny<ProcessStartInfo>(),null,null))
                 .Callback(callback)
-                .Returns(true)
+                .Returns(StatusTypes.InProgress)
                 .Verifiable();
 
             return runner;

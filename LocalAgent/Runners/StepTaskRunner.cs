@@ -47,15 +47,21 @@ namespace LocalAgent.Runners
             StepTask = stepTask;
         }
 
-        public override bool Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)
+        public override StatusTypes Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)
         {
             if (!StepTask.Enabled) {
                 Logger.Warn("Task disabled");
-                
-                return true;
+                return StatusTypes.Skipped;
             }
 
-            return base.Run(context, stage, job);
+            var status = RunInternal(context, stage, job);
+
+            if (status == StatusTypes.InProgress)
+                status = StatusTypes.Complete;
+
+            return status;
         }
+
+        public abstract StatusTypes RunInternal(PipelineContext context, IStageExpectation stage, IJobExpectation job);
     }
 }

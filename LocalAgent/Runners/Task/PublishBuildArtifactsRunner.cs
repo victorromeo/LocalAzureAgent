@@ -23,13 +23,9 @@ namespace LocalAgent.Runners.Task
             GetLogger().Info($"Created {Task}");
         }
 
-        public override bool Run(PipelineContext context, 
-            IStageExpectation stage, 
-            IJobExpectation job)
+        public override StatusTypes RunInternal(PipelineContext context, IStageExpectation stage, IJobExpectation job)
         {
-            base.Run(context, stage, job);
-            GetLogger().Warn("Not Implemented");
-            return false;
+            throw new System.NotImplementedException();
         }
     }
 }

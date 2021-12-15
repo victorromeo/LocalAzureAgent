@@ -39,6 +39,11 @@ namespace LocalAgent.Models
 
     public class StepTask : Expectation, IStepExpectation
     {
+        public StepTask()
+        {
+            Enabled = true;
+        }
+
         public string Task { get; set; }
         public Dictionary<string,string> Inputs { get; set; }
         public string DisplayName { get; set; }

@@ -42,22 +42,22 @@ namespace LocalAgent.Runners.Task
             GetLogger().Info($"Created {Task}");
         }
 
-        public override bool Run(PipelineContext context, 
+        public override StatusTypes RunInternal(PipelineContext context, 
             IStageExpectation stage, 
-            IJobExpectation job)
+            IJobExpectation job)    
         {
             if (!valid_commands.Contains(Command.ToLower()))
             {
                 GetLogger().Warn($"Command '{Command}' not supported.");
-                return false;
+                return StatusTypes.Error;
             }
 
-            base.Run(context, stage, job);
             var workingDirectory = context.Variables[VariableNames.BuildSourcesDirectory];
             var targets = new FileUtils().FindFilesByPattern(context, workingDirectory, Projects);
 
-            bool ranToSuccess = true;
-            for (var index = 0; ranToSuccess  && index < targets.Count; index++)
+            var status = StatusTypes.InProgress;
+
+            for (var index = 0; status == StatusTypes.InProgress && index < targets.Count; index++)
             {
                 var buildTarget = targets[index];
                 var command = new CommandLineCommandBuilder("dotnet")
@@ -69,10 +69,10 @@ namespace LocalAgent.Runners.Task
                 var processInfo = command.Compile(context, stage, job, StepTask);
 
                 GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
-                ranToSuccess = RunProcess(processInfo);
+                status = RunProcess(processInfo);
             }
 
-            return ranToSuccess;
+            return status;
         }
     }
 }

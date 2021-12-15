@@ -52,86 +52,105 @@ namespace LocalAgent
             return 0;
         }
 
-        private static bool RunPipeline(PipelineContext context)
-        {
-            bool ranToSuccess = RunStages(context, context.Pipeline.Stages)
-                                && RunJobs(context, null, context.Pipeline.Jobs)
-                                && RunSteps(context, null,null, context.Pipeline.Steps);
-
-            return ranToSuccess;
+        public static bool CanContinue(StatusTypes status) {
+            return status == StatusTypes.InProgress 
+                || status == StatusTypes.Complete
+                || status == StatusTypes.Skipped;
         }
 
-        private static bool RunStages(PipelineContext context, 
+        public static bool CanContinue(StatusTypes status, IJobExpectation job) {
+            return status == StatusTypes.InProgress 
+                || status == StatusTypes.Complete
+                || status == StatusTypes.Skipped
+                || ((status == StatusTypes.Error || status == StatusTypes.Warning) && (job as JobStandard).ContinueOnError);
+        }
+
+        private static StatusTypes RunPipeline(PipelineContext context)
+        {
+            var status = RunStages(context, context.Pipeline.Stages);
+
+            if (CanContinue(status)) {
+                status = RunJobs(context, null, context.Pipeline.Jobs);
+            }   
+            
+            if (CanContinue(status)) {
+                status = RunSteps(context, null,null, context.Pipeline.Steps);
+            }
+
+            return status;
+        }
+
+        private static StatusTypes RunStages(PipelineContext context, 
             IList<IStageExpectation> stages)
         {
-            bool ranToSuccess = true;
+            var status = StatusTypes.InProgress;
 
             if (stages?.Count > 0)
             {
-                for (var i = 0; ranToSuccess && i < stages.Count; i++)
+                for (var i = 0; CanContinue(status) && i < stages.Count; i++)
                 {
                     var stage = stages[i];
                     Logger.Info($"STAGE: ({i}/{stages.Count}) {stage.Stage}");
-                    ranToSuccess &= RunStage(context, stage);
+                    status = RunStage(context, stage);
                 }
             }
 
-            return ranToSuccess;
+            return status;
         }
 
-        private static bool RunStage(PipelineContext context, 
+        private static StatusTypes RunStage(PipelineContext context, 
             IStageExpectation stage)
         {
             return RunJobs(context, stage, stage.Jobs);
         }
 
-        private static bool RunJobs(PipelineContext context, 
+        private static StatusTypes RunJobs(PipelineContext context, 
             IStageExpectation stage,
             IList<IJobExpectation> jobs)
         {
-            bool ranToSuccess = true;
+            var status = StatusTypes.InProgress;
 
             if (jobs?.Count > 0)
             {
-                for (var j = 0; ranToSuccess && j < jobs.Count; j++)
+                for (var j = 0; CanContinue(status, jobs[j]) && j < jobs.Count; j++)
                 {
                     var job = jobs[j];
                     Logger.Info($"JOB: ({j}/{jobs.Count}) {job.DisplayName}");
-                    ranToSuccess &= RunJob(context, stage, job);
+                    status = RunJob(context, stage, job);
                 }
             }
 
-            return ranToSuccess;
+            return status;
         }
 
-        private static bool RunJob(PipelineContext context, 
+        private static StatusTypes RunJob(PipelineContext context, 
             IStageExpectation stage, 
             IJobExpectation job)
         {
             return RunSteps(context, stage, job, GetSteps(job));
         }
 
-        private static bool RunSteps(PipelineContext context,
+        private static StatusTypes RunSteps(PipelineContext context,
             IStageExpectation stage,
             IJobExpectation job,
             IList<IStepExpectation> steps)
         {
-            bool ranToSuccess = true;
+            var status = StatusTypes.InProgress;
 
             if (steps?.Count > 0)
             {
-                for (var s = 0; ranToSuccess && s < steps.Count; s++)
+                for (var s = 0; CanContinue(status,job) && s < steps.Count; s++)
                 {
                     var step = steps[s];
                     Logger.Info($"STEP: ({s}/{steps.Count}) {step.DisplayName}");
-                    ranToSuccess = RunStep(context, stage, job, step);
+                    status = RunStep(context, stage, job, step);
                 }
             }
 
-            return ranToSuccess;
+            return status;
         }
 
-        private static bool RunStep(PipelineContext context, 
+        private static StatusTypes RunStep(PipelineContext context, 
             IStageExpectation stage, 
             IJobExpectation job,
             IStepExpectation step)
@@ -140,19 +159,40 @@ namespace LocalAgent
             if (runner == null)
             {
                 Logger.Warn($"STEP: '{step.DisplayName}' failed. No runner found");
-                return false;
+                return StatusTypes.Warning;
             }
 
             context.SetupVariables(stage,job,step);
-            var ranToSuccess = runner.Run(context, stage, job);
-
-            if (ranToSuccess)
-                Logger.Info($"STEP: '{step.DisplayName}' succeeded");
-            else
-                Logger.Warn($"STEP: '{step.DisplayName}' failed");
-
+            
+            var status = runner.Run(context, stage, job);
+            LogStatus(status,step);
+  
             context.CleanTempFolder();
-            return ranToSuccess;
+
+            return status;
+        }
+
+        private static void LogStatus(StatusTypes status, IStepExpectation step) {
+            switch(status) {
+                case StatusTypes.Init:
+                    Logger.Info($"STEP: '{step.DisplayName}' initialized");
+                    break;
+                case StatusTypes.InProgress:
+                    Logger.Info($"STEP: '{step.DisplayName}' in progress");
+                    break;
+                case StatusTypes.Skipped:
+                    Logger.Info($"STEP: '{step.DisplayName}' skipped");
+                    break;
+                case StatusTypes.Warning:
+                    Logger.Info($"STEP: '{step.DisplayName}' completed with Warning");
+                    break;
+                case StatusTypes.Error:
+                    Logger.Info($"STEP: '{step.DisplayName}' failed");
+                    break;
+                case StatusTypes.Complete:
+                    Logger.Info($"STEP: '{step.DisplayName}' succeeded");
+                    break;
+            } 
         }
 
         private static IList<IStepExpectation> GetSteps(IJobExpectation job)

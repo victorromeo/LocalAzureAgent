@@ -21,12 +21,17 @@ namespace LocalAgent
         {
             Variables = variables;
             Variables.ClearLookup();
+
+            var sourcePath = Variables.SourcePath.ToPath();
+            var workFolderBase = Variables[VariableNames.AgentWorkFolder].ToPath();
+            var buildSourceDirectory = Variables[VariableNames.BuildSourcesDirectory].ToPath();
+
             Logger.Info("Build Context created");
-            Logger.Info($"Source Path: {Variables.SourcePath}");
-            Logger.Info($"Working Source Path: {Variables.WorkFolderBase}");
+            Logger.Info($"Source Path: {sourcePath}");
+            Logger.Info($"Working Source Path: {workFolderBase}");
 
             // Assess the GIT repository to log current state
-            var buildSourceDirectory = Variables[VariableNames.BuildSourcesDirectory];
+            
             if (string.IsNullOrEmpty(buildSourceDirectory)) return;
 
             var repo = GitUtils.GetRepository(buildSourceDirectory);
@@ -73,34 +78,34 @@ namespace LocalAgent
 
         private void CreateFolderStructure()
         {
-            Logger.Info($"Creating Work Folders: {Variables.Eval(Variables.WorkFolderBase)}");
-            new FileUtils().CreateFolder(Variables[VariableNames.BuildSourcesDirectory]);
-            new FileUtils().CreateFolder(Variables[VariableNames.BuildArtifactStagingDirectory]);
-            new FileUtils().CreateFolder(Variables[VariableNames.BuildBinariesDirectory]);
+            Logger.Info($"Creating Work Folders: {Variables.Eval(Variables.WorkFolderBase).ToPath()}");
+            new FileUtils().CreateFolder(Variables[VariableNames.BuildSourcesDirectory].ToPath());
+            new FileUtils().CreateFolder(Variables[VariableNames.BuildArtifactStagingDirectory].ToPath());
+            new FileUtils().CreateFolder(Variables[VariableNames.BuildBinariesDirectory].ToPath());
 
-            Logger.Info($"Creating Temp Folder: {Variables.Eval(Variables[VariableNames.AgentTempDirectory])}");
-            new FileUtils().CreateFolder(Variables[VariableNames.AgentTempDirectory]);
+            Logger.Info($"Creating Temp Folder: {Variables.Eval(Variables[VariableNames.AgentTempDirectory]).ToPath()}");
+            new FileUtils().CreateFolder(Variables[VariableNames.AgentTempDirectory].ToPath());
         }
 
         private void CleanWorkFolder()
         {
-            Logger.Info($"Cleaning Work Folders: {Variables.Eval(Variables.WorkFolderBase)}");
-            new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildSourcesDirectory]);
-            new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildArtifactStagingDirectory]);
-            new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildBinariesDirectory]);
+            Logger.Info($"Cleaning Work Folders: {Variables.Eval(Variables.WorkFolderBase).ToPath()}");
+            new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildSourcesDirectory].ToPath());
+            new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildArtifactStagingDirectory].ToPath());
+            new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildBinariesDirectory].ToPath());
         }
 
         private void CloneSourceToWorkFolder()
         {
-            Logger.Info($"Cloning source from: {Variables.SourcePath} to {Variables[VariableNames.BuildSourcesDirectory]}");
-            new FileUtils().ClearReadOnlyFlag(Variables[VariableNames.BuildSourcesDirectory]);
-            new FileUtils().CloneFolder(Variables.SourcePath, Variables[VariableNames.BuildSourcesDirectory]);
+            Logger.Info($"Cloning source from: {Variables.SourcePath.ToPath()} to {Variables[VariableNames.BuildSourcesDirectory].ToPath()}");
+            new FileUtils().ClearReadOnlyFlag(Variables[VariableNames.BuildSourcesDirectory].ToPath());
+            new FileUtils().CloneFolder(Variables.SourcePath.ToPath(), Variables[VariableNames.BuildSourcesDirectory].ToPath());
         }
 
         public void CleanTempFolder()
         {
             Logger.Info($"Cleaning Temp Folder: {Variables[VariableNames.AgentTempDirectory]}");
-            new FileUtils().DeleteFolderContent(Variables[VariableNames.AgentTempDirectory]);
+            new FileUtils().DeleteFolderContent(Variables[VariableNames.AgentTempDirectory].ToPath());
         }
 
         public PipelineContext LoadPipeline(Pipeline pipeline = null)
@@ -147,8 +152,8 @@ namespace LocalAgent
         {
             List<string> searchPaths = new()
             {
-                $"{Variables[VariableNames.BuildSourcesDirectory]}/{Variables.YamlPath}",
-                $"{Variables.SourcePath}/{Variables.YamlPath}"
+                $"{Variables[VariableNames.BuildSourcesDirectory]}/{Variables.YamlPath}".ToPath(),
+                $"{Variables.SourcePath}/{Variables.YamlPath}".ToPath()
             };
 
             var validPath = searchPaths
@@ -156,7 +161,7 @@ namespace LocalAgent
                 .FirstOrDefault(i => new FileUtils().CheckFileExtension(i,".yml"));
 
             if (validPath == null)
-                throw new Exception($"Yaml file '{Variables.YamlPath}' not found");
+                throw new Exception($"Yaml file '{Variables.YamlPath.ToPath()}' not found");
 
             return validPath;
         }
