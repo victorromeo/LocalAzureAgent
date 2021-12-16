@@ -49,7 +49,6 @@ namespace LocalAgent.Tests
                 };
 
             var options = new PipelineOptions() {
-                AgentWorkFolder = "work",
                 SourcePath = "C:\\SomeAgentPath",
                 YamlPath = "SomePipeline.yaml"
             };

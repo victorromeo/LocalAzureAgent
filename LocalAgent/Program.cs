@@ -39,50 +39,59 @@ namespace LocalAgent
             Logger.Info("Starting");
             Logger.Info($"Log File {logFilePath}");
 
-            Parser.Default.ParseArguments<PipelineOptions>(args)
-                .WithParsed(o =>
+            var options = new PipelineOptions();
+
+            var rc = HostFactory.Run(x => {
+                x.AddCommandLineDefinition(PipelineOptionFlags.SourcePath, v=> options.SourcePath = v);
+                x.AddCommandLineDefinition(PipelineOptionFlags.YamlFile, v=> options.YamlPath = v);
+                x.AddCommandLineDefinition(PipelineOptionFlags.AgentId, v=> options.AgentId = Convert.ToInt32(v));
+                x.AddCommandLineDefinition(PipelineOptionFlags.BuildDefinitionName, v=>options.BuildDefinitionName = v);
+                x.AddCommandLineSwitch(PipelineOptionFlags.RunAsService, v=>options.RunAsService = v);
+
+                x.Service<ServiceAgent>(s =>
                 {
-                    if (o.BackgroundService)
-                    {
-                        var rc = HostFactory.Run(x =>
-                        {
-                            x.Service<PipelineAgent>(s =>
-                            {
-                                s.ConstructUsing(n => new PipelineAgent(o));
-                                s.WhenStarted(tc => tc.Start());
-                                s.WhenStopped(tc => tc.Stop());
-                            });
-
-                            x.RunAsLocalSystem();
-
-                            x.SetDescription("LocalAgent Pipeline Agent");
-                            x.SetDisplayName("LocalAgent");
-                            x.SetServiceName("LocalAgent");
-                            x.UseNLog();
-                        });
-
-                        var exitCode = (int) Convert.ChangeType(rc, rc.GetTypeCode());
-                        Environment.ExitCode = exitCode;
-                    }
-                    else
-                    {
-                        var agent = new PipelineAgent(o);
-                        Environment.ExitCode = agent.Run();
-                    }
-                }).WithNotParsed(e =>
-                {
-                    var appName = Assembly.GetEntryAssembly().GetName().Name;
-                    Logger.Error($"Expected: {appName} <source path> <yml path> <options>");
-
-                    foreach (var error in e)
-                    {
-                        Logger.Error(error.Tag);
-                    }
-                    
-                    Environment.ExitCode = 1;
+                    s.ConstructUsing(n => new ServiceAgent(options));
+                    s.WhenStarted(tc => tc.OnStart());
+                    s.WhenStopped(tc => tc.OnStop());
                 });
 
+                x.RunAsLocalSystem();
+                x.OnException(OnServiceError);
+
+                x.SetDescription("LocalAgent Pipeline Agent");
+                x.SetDisplayName("LocalAgent");
+                x.SetServiceName("LocalAgent");
+                
+                x.UseNLog(LogManager.LogFactory);
+            });
+
             Logger.Info("Finished");
+        }
+
+        private static void OnServiceError(Exception ex)
+        {
+            Logger.Error(ex, "Daemon background service failed to start");
+        }
+    }
+
+    public class ServiceAgent {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+        private PipelineOptions _options;
+
+        public ServiceAgent(PipelineOptions options)        
+        {
+            _options = options;
+        }
+
+        public void OnStart() {
+            var pipelineAgent = new PipelineAgent(_options);
+            Logger.Info("Starting Pipeline Agent");
+            Environment.ExitCode = pipelineAgent.Run();
+        }
+
+        public void OnStop() {
+             Logger.Info("Stopping Pipeline Agent");
         }
     }
 }

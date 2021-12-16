@@ -47,7 +47,6 @@ namespace LocalAgent.Tests
                 .Returns(new NullLogger(new LogFactory()));
 
             var options = new PipelineOptions() {
-                AgentWorkFolder = "work",
                 SourcePath = "C:\\SomeAgentPath",
                 YamlPath = "SomePipeline.yaml"
             };

@@ -42,6 +42,7 @@ namespace LocalAgent
             }
             catch (Exception ex)
             {
+                Logger.Error("Pipeline execution terminated due to exception");
                 Logger.Error(ex);
             }
             finally
@@ -92,8 +93,9 @@ namespace LocalAgent
                 for (var i = 0; CanContinue(status) && i < stages.Count; i++)
                 {
                     var stage = stages[i];
-                    Logger.Info($"STAGE: ({i}/{stages.Count}) {stage.Stage}");
+                    Logger.Info($"STAGE: ({i}/{stages.Count}) {stage.Stage} Begin");
                     status = RunStage(context, stage);
+                    Logger.Info($"STAGE: ({i}/{stages.Count}) {stage.Stage} End");
                 }
             }
 
@@ -144,8 +146,9 @@ namespace LocalAgent
                 for (var s = 0; CanContinue(status,job) && s < steps.Count; s++)
                 {
                     var step = steps[s];
-                    Logger.Info($"STEP: ({s}/{steps.Count}) {step.DisplayName}");
+                    Logger.Info($"STEP: ({s}/{steps.Count}) {step.DisplayName} Begin:{ToString(status)}");
                     status = RunStep(context, stage, job, step);
+                    Logger.Info($"STEP: ({s}/{steps.Count}) {step.DisplayName} End:{ToString(status)}");
                 }
             }
 
@@ -166,38 +169,30 @@ namespace LocalAgent
 
             context.SetupVariables(stage,job,step);
             
-            var status = runner.Run(context, stage, job);
-            LogStatus(status,step);
+            var status = runner.Run(context, stage, job);            
   
             context.CleanTempFolder();
 
             return status;
         }
 
-        private static void LogStatus(StatusTypes status, IStepExpectation step) {
-            var stepName = string.IsNullOrEmpty(step.DisplayName) 
-                ? string.Empty
-                : $"'{step.DisplayName}' ";
+        private static string ToString(StatusTypes status) {
             switch(status) {
                 case StatusTypes.Init:
-                    Logger.Info($"STEP: {stepName}initialized");
-                    break;
+                    return "Initialized";
                 case StatusTypes.InProgress:
-                    Logger.Info($"STEP: {stepName}in progress");
-                    break;
+                    return "In Progress";
                 case StatusTypes.Skipped:
-                    Logger.Info($"STEP: {stepName}skipped");
-                    break;
+                    return "Skipped";
                 case StatusTypes.Warning:
-                    Logger.Info($"STEP: {stepName}completed with Warning");
-                    break;
+                    return "Warning";
                 case StatusTypes.Error:
-                    Logger.Info($"STEP: {stepName}failed");
-                    break;
+                    return "Error";
                 case StatusTypes.Complete:
-                    Logger.Info($"STEP: {stepName}succeeded");
-                    break;
-            } 
+                    return "Complete";
+                default:
+                    return "Unknown"; 
+            }            
         }
 
         private static IList<IStepExpectation> GetSteps(IJobExpectation job)

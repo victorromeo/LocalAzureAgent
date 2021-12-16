@@ -19,7 +19,7 @@ namespace LocalAgent.Variables
         string YamlPath { get; set; }
         string SourcePath { get; set; }
 
-        bool BackgroundService { get; set; }
+        bool RunAsService { get; set; }
         string NugetFolder { get; set; }
         string WorkFolderBase { get; set; }
         string BuildNumber { get; set; }
@@ -83,7 +83,7 @@ namespace LocalAgent.Variables
         public string YamlPath { get; set; }
         public string SourcePath { get; set; }
         public string WorkFolderBase { get; set; }
-        public bool BackgroundService { get; set; }
+        public bool RunAsService { get; set; }
         public string NugetFolder { get; set; }
 
         public string BuildNumber
@@ -107,12 +107,19 @@ namespace LocalAgent.Variables
 
         public IVariables Load(PipelineOptions options)
         {
-            SourcePath = Path.Combine(Environment.CurrentDirectory,
-                    options.SourcePath);
+            if (string.IsNullOrEmpty(options.SourcePath)) {
+                throw new Exception("SourcePath not provided");                
+            }
+
+            if (string.IsNullOrEmpty(options.YamlPath)) {
+                throw new Exception("YamlPath not provided");
+            }
+
+            SourcePath = Path.Combine(Environment.CurrentDirectory, options.SourcePath);
 
             YamlPath = options.YamlPath;
             NugetFolder = options.NugetFolder;
-            BackgroundService = options.BackgroundService;
+            RunAsService = options.RunAsService;
 
             AgentVariables = new AgentVariables()
             {
