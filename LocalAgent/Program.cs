@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using CommandLine;
 using LocalAgent.Variables;
 using NLog;
+using NLog.Conditions;
 using NLog.Config;
 using NLog.Targets;
 using Topshelf;
@@ -26,7 +27,44 @@ namespace LocalAgent
         {
             // Declare logging
             var config = new LoggingConfiguration();
-            ConsoleTarget logConsole = new ConsoleTarget(nameof(logConsole));
+            ColoredConsoleTarget logConsole = new ColoredConsoleTarget(nameof(logConsole))
+            {
+                Layout = "${date:format=HH\\:MM\\:ss} [${level}] ${message}",
+                EnableAnsiOutput = true,                
+            };
+
+            logConsole.UseDefaultRowHighlightingRules = false;
+
+            logConsole.WordHighlightingRules.Add(new ConsoleWordHighlightingRule(
+                    "[Trace]",
+                    foregroundColor: ConsoleOutputColor.Gray,
+                    backgroundColor: ConsoleOutputColor.NoChange
+                ));
+
+            logConsole.WordHighlightingRules.Add(new ConsoleWordHighlightingRule(
+                    "[Info]", 
+                    foregroundColor: ConsoleOutputColor.Green,
+                    backgroundColor: ConsoleOutputColor.NoChange
+                ));
+
+            logConsole.WordHighlightingRules.Add(new ConsoleWordHighlightingRule(
+                    "[Warn]",
+                    foregroundColor: ConsoleOutputColor.Magenta,
+                    backgroundColor: ConsoleOutputColor.NoChange
+                ));
+
+
+            logConsole.WordHighlightingRules.Add(new ConsoleWordHighlightingRule(
+                    "[Error]",
+                    foregroundColor: ConsoleOutputColor.Red,
+                    backgroundColor: ConsoleOutputColor.NoChange
+                ));
+
+            logConsole.WordHighlightingRules.Add(new ConsoleWordHighlightingRule(
+                    "[Fatal]",
+                    foregroundColor: ConsoleOutputColor.Yellow,
+                    backgroundColor: ConsoleOutputColor.NoChange
+                ));
 
             var logFilePath = Path.Join(Environment.CurrentDirectory,$"agent_{DateTime.Now.ToString("yyMMddhhmmss")}.log");
             FileTarget logFile = new FileTarget(nameof(logFile));
@@ -38,6 +76,7 @@ namespace LocalAgent
 
             Logger.Info("Starting");
             Logger.Info($"Log File {logFilePath}");
+            Logger.Info($"Processing: {Assembly.GetEntryAssembly().GetName().Name} {string.Join(' ', args)}");
 
             Parser.Default.ParseArguments<PipelineOptions>(args)
                 .WithParsed(o =>
