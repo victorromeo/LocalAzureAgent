@@ -12,10 +12,12 @@ namespace LocalAgent
     public class PipelineContext
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-
+        private PipelineOptions _pipelineOptions;
         public PipelineContext(PipelineOptions options)
             : this(new Variables.Variables().Load(options))
-        { }
+        { 
+            _pipelineOptions = options;
+        }
 
         public PipelineContext(IVariables variables)
         {
@@ -69,9 +71,15 @@ namespace LocalAgent
         public PipelineContext Prepare()
         {
             CreateFolderStructure();
-            // CleanWorkFolder();
-            // CleanTempFolder();
-            CloneSourceToWorkFolder();
+            
+            if (_pipelineOptions.BuildInplace) 
+            {
+                Logger.Info("Skipping clone of source directory, as building inplace");
+            }
+            else
+            {
+                CloneSourceToWorkFolder();
+            }
 
             return this;
         }
@@ -150,6 +158,19 @@ namespace LocalAgent
 
         internal virtual FileInfo GetYamlPath()
         {
+            try
+            {
+                if (File.Exists(Variables.YamlPath))
+                {
+                    Logger.Info($"Yaml Path: {Variables.YamlPath}");
+                    return new FileInfo(Variables.YamlPath);
+                }
+            }
+            catch
+            {
+                Logger.Info($"Searching for Yaml Path: {Variables.YamlPath}");
+            }
+
             List<string> searchPaths = new()
             {
                 $"{Variables[VariableNames.BuildSourcesDirectory]}/{Variables.YamlPath}".ToPath(),

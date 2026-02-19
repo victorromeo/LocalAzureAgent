@@ -1,11 +1,12 @@
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using LocalAgent.Models;
 using LocalAgent.Utilities;
 using LocalAgent.Variables;
 using NLog;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 
 namespace LocalAgent.Runners.Task
 {
@@ -54,6 +55,9 @@ namespace LocalAgent.Runners.Task
             GetLogger().Info($"Created {Task}");
         }
 
+        private static IList<string> _nugetPaths = null;
+        private static IDictionary<string, string> _nugetVersions = null;
+
         public override StatusTypes RunInternal(PipelineContext context, 
             IStageExpectation stage, 
             IJobExpectation job)
@@ -65,9 +69,6 @@ namespace LocalAgent.Runners.Task
                 GetLogger().Warn($"Command '{cmd}' not supported.");
                 return StatusTypes.Error;
             }
-
-            var installPath = context.Variables[VariableNames.AgentHomeDirectory];
-            var nugetPath = $"{installPath}/nuget.exe".ToPath();
 
             var status = StatusTypes.Init;
 
@@ -82,6 +83,8 @@ namespace LocalAgent.Runners.Task
                 for (var index = 0; status == StatusTypes.InProgress && index < targets.Count; index++) {
                     var restoreSolution = targets[index].ToPath();
 
+                    var nugetPath = GetNugetPath(context);
+
                     var command = new CommandLineCommandBuilder(nugetPath);
                     command.Arg(RestoreCommand)
                         .ArgIf(restoreSolution, $"\"{restoreSolution}\"");
@@ -95,6 +98,47 @@ namespace LocalAgent.Runners.Task
             }
 
             return status;
+        }
+
+        public string GetNugetPath(PipelineContext context)
+        {
+            var installPath = context.Variables[VariableNames.AgentHomeDirectory];
+            var nugetPath = $"{installPath}/nuget.exe".ToPath();
+
+            if (File.Exists(nugetPath))
+                return nugetPath;
+
+
+            List<string> searchPaths = new List<string>()
+            {
+                context.Variables[VariableNames.BuildSourcesDirectory],
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}",
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)}\\Microsoft Visual Studio\\2022\\",
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}\\Microsoft Visual Studio\\2022\\",
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)}\\Microsoft Visual Studio\\2019\\",
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}\\Microsoft Visual Studio\\2019\\",
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)}\\Microsoft Visual Studio\\2017\\",
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}\\Microsoft Visual Studio\\2017\\",
+            };
+
+            _nugetPaths ??= searchPaths
+                .SelectMany(i => new FileUtils().FindFiles(i, "nuget.exe"))
+                .ToList();
+
+            _nugetVersions = _nugetPaths.ToDictionary(i => i, GetNugetVersion);
+
+            return _nugetVersions.OrderByDescending(i => i.Value).Select(i => i.Key).FirstOrDefault();
+        }
+
+        public string GetNugetVersion(string filePath)
+        {
+            if (new FileInfo(filePath).Exists)
+            {
+                var versionInfo = FileVersionInfo.GetVersionInfo(filePath);
+                return versionInfo.FileVersion;
+            }
+
+            return null;
         }
     }
 }

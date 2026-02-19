@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
-using LocalAgent.Models;
+﻿using LocalAgent.Models;
+using LocalAgent.Variables;
 using NLog;
+using System.Diagnostics;
 
 namespace LocalAgent.Runners.Base
 {
@@ -19,16 +20,26 @@ namespace LocalAgent.Runners.Base
         public override StatusTypes Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)
         {
             base.Run(context, stage, job);
-            GetLogger().Info($"{_step.Script}");
-
+            
             var script = context.Variables.Eval(_step.Script, 
                 context.Pipeline?.Variables,
                 stage?.Variables, 
                 job?.Variables, 
                 null);
 
+            GetLogger().Info($"{script}");
+
+            var workingDirectory = context.Variables[VariableNames.BuildSourcesDirectory];
+
+            //var workingDirectory = context.Variables.Eval(
+            //    "{VariableNames.AgentBuildDirectory}", 
+            //    context.Pipeline?.Variables, 
+            //    stage?.Variables, 
+            //    job?.Variables);
+
             var processInfo = new ProcessStartInfo("cmd.exe", $"/C {script}")
             {
+                WorkingDirectory = workingDirectory,
                 CreateNoWindow = true,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,

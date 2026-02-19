@@ -30,14 +30,15 @@ namespace LocalAgent.Runners.Task
         public static string Task = "MSBuild@1";
         protected override ILogger Logger => LogManager.GetCurrentClassLogger();
         public string Solution => FromInputString("solution");
-        public string MsBuildArguments => FromInputString("msBuildArguments");
+        public string MsBuildArguments => FromInputString("msbuildArguments");
         public string Configuration => FromInputString("configuration");
         public string Platform => FromInputString("platform");
         public string MsBuildArchitecture => FromInputString("msBuildArchitecture");
         public bool MaximumCpuCount => FromInputBool("maximumCpuCount");
         public bool RestoreNugetPackages => FromInputBool("restoreNugetPackages");
         public bool Clean => FromInputBool("clean");
-        public string MsBuildVersion => FromInputString("msBuildVersion");
+        public string MsBuildVersion => FromInputString("msbuildVersion");
+        public string Verbosity => FromInputString("logFileVerbosity");
 
         public static IList<string> _msBuildPaths = null;
 
@@ -53,6 +54,8 @@ namespace LocalAgent.Runners.Task
         {
             List<string> searchPaths = new()
             {
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)}\\Microsoft Visual Studio\\2022\\",
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}\\Microsoft Visual Studio\\2022\\",
                 $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)}\\Microsoft Visual Studio\\2019\\",
                 $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}\\Microsoft Visual Studio\\2019\\",
                 $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)}\\Microsoft Visual Studio\\2017\\",
@@ -140,9 +143,13 @@ namespace LocalAgent.Runners.Task
                 {
                     var buildTarget = buildTargets[index].ToPath();
                     var command = new CommandLineCommandBuilder($"\"{msBuildPath}\"")
-                        .Arg($"\"{buildTarget}\"")
+                        .ArgIf(RestoreNugetPackages, "/restore")
+                        .Arg($"\"{buildTarget}\"")                        
+                        .ArgIf(MaximumCpuCount, "/maxcpucount")
                         .ArgIf(Platform, $"/p:Platform=\"{Platform}\"")
-                        .ArgIf(Configuration, $"/p:Configuration=\"{Configuration}\"");
+                        .ArgIf(Configuration, $"/p:Configuration=\"{Configuration}\"")
+                        .ArgIf(Verbosity, $"/verbosity:{Verbosity}")
+                        .ArgIf(MsBuildArguments, MsBuildArguments);
 
                     var processInfo = command.Compile(context, stage, job, StepTask);
                     GetLogger().Info($"COMMAND: {processInfo.FileName} {processInfo.Arguments}");

@@ -42,6 +42,8 @@ namespace LocalAgent
         public const string NugetFolderDefault = "../nuget";
         public const string NugetFolderHelpText = "Folder used to store Nuget Packages for use by the pipeline";
         public const string NugetFolderVariable = "Agent.NugetFolder";
+        public const bool BuildInplaceDefault = false;
+        public const string BuildInplaceHelpText = "If true, the build does not occur in a work folder, but instead builds in the source folder";
 
         /// <summary>
         /// Azure DevOps build directory, path of build
@@ -130,6 +132,9 @@ namespace LocalAgent
             HelpText = "Source Path: The absolute or relative path to the source folder, which will be cloned into the agent work folder",
             Required = true)]
         public string SourcePath { get; set; }
+
+        [Option("inplace", Default = BuildInplaceDefault, HelpText = BuildInplaceHelpText)]
+        public bool BuildInplace { get; set; }
 
         /// <summary>
         /// The path to the yaml pipeline file, which acts as the entry point for the pipeline build process

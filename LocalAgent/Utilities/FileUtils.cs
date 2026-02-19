@@ -123,7 +123,15 @@ namespace LocalAgent.Utilities
         // Creates a folder, and subfolders
         public void CreateFolder(string path)
         {
-            Directory.CreateDirectory(path);
+            if (Directory.Exists(path))
+            {
+                Logger.Info($"Create Folder: {path}. Exists skipping");
+            }
+            else
+            {
+                Directory.CreateDirectory(path);
+                Logger.Info($"Create Folder: {path}. Created");
+            }
         }
 
         public IList<string> FindFilesByPattern(PipelineContext context, string path, IList<string> patterns)

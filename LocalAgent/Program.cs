@@ -66,6 +66,18 @@ namespace LocalAgent
                     backgroundColor: ConsoleOutputColor.NoChange
                 ));
 
+            logConsole.WordHighlightingRules.Add(new ConsoleWordHighlightingRule(
+                ": warning ",
+                foregroundColor: ConsoleOutputColor.Magenta,
+                backgroundColor: ConsoleOutputColor.NoChange
+            ));
+
+            logConsole.WordHighlightingRules.Add(new ConsoleWordHighlightingRule(
+                ": error ",
+                foregroundColor: ConsoleOutputColor.Red,
+                backgroundColor: ConsoleOutputColor.NoChange
+            ));
+
             var logFilePath = Path.Join(Environment.CurrentDirectory,$"agent_{DateTime.Now.ToString("yyMMddhhmmss")}.log");
             FileTarget logFile = new FileTarget(nameof(logFile));
             logFile.FileName = logFilePath;

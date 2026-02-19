@@ -107,8 +107,9 @@ namespace LocalAgent.Variables
 
         public IVariables Load(PipelineOptions options)
         {
-            SourcePath = Path.Combine(Environment.CurrentDirectory,
-                    options.SourcePath);
+            SourcePath = options.BuildInplace
+                ? Environment.CurrentDirectory
+                : Path.Combine(Environment.CurrentDirectory, options.SourcePath);
 
             YamlPath = options.YamlPath;
             NugetFolder = options.NugetFolder;
@@ -129,14 +130,24 @@ namespace LocalAgent.Variables
                 AgentTempDirectory = options.AgentTempDirectory,
                 AgentWorkFolder = options.AgentWorkFolder // GetPath(Environment.CurrentDirectory, options.AgentWorkFolder)
             };
-
-            WorkFolderBase = Path.Combine(AgentVariables.AgentWorkFolder, AgentVariables.AgentId.ToString());
+            
+            WorkFolderBase = options.BuildInplace
+                ? options.AgentWorkFolder
+                : Path.Combine(AgentVariables.AgentWorkFolder, AgentVariables.AgentId.ToString());
 
             var stagingDirectory = Path.Combine(WorkFolderBase, "a");
             var binariesDirectory = Path.Combine(WorkFolderBase, "b");
             var sourcesDirectory = Path.Combine(WorkFolderBase, "s");
             var testResultsDirectory = Path.Combine(WorkFolderBase, "TestResults");
 
+            if (options.BuildInplace)
+            {
+                stagingDirectory = WorkFolderBase;
+                binariesDirectory = WorkFolderBase;
+                sourcesDirectory = WorkFolderBase;
+                testResultsDirectory = WorkFolderBase;
+            }
+            
             BuildVariables = new BuildVariables()
             {
                 BuildId = "1",
