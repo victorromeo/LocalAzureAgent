@@ -92,7 +92,8 @@ namespace LocalAgent
                 for (var i = 0; CanContinue(status) && i < stages.Count; i++)
                 {
                     var stage = stages[i];
-                    Logger.Info($"STAGE: ({i}/{stages.Count}) {stage.Stage}");
+                    Console.WriteLine();
+                    Logger.Info($"STAGE: ({i + 1}/{stages.Count}) {stage.Stage}");
                     status = RunStage(context, stage);
                 }
             }
@@ -117,7 +118,8 @@ namespace LocalAgent
                 for (var j = 0; CanContinue(status, jobs[j]) && j < jobs.Count; j++)
                 {
                     var job = jobs[j];
-                    Logger.Info($"JOB: ({j}/{jobs.Count}) {job.DisplayName}");
+                    Console.WriteLine();
+                    Logger.Info($"JOB: ({j + 1}/{jobs.Count}) {job.DisplayName}");
                     status = RunJob(context, stage, job);
                 }
             }
@@ -144,7 +146,8 @@ namespace LocalAgent
                 for (var s = 0; CanContinue(status,job) && s < steps.Count; s++)
                 {
                     var step = steps[s];
-                    Logger.Info($"STEP: ({s}/{steps.Count}) {step.DisplayName}");
+                    Console.WriteLine();
+                    Logger.Info($"STEP: ({s + 1}/{steps.Count}) {step.DisplayName}");
                     status = RunStep(context, stage, job, step);
                 }
             }
