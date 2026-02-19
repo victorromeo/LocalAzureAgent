@@ -2,8 +2,8 @@
   "profiles": {
     "LocalAgent": {
       "commandName": "Executable",
-      "executablePath": "$(SolutionDir)\\LocalAgent\\bin\\Debug\\net5.0\\LocalAgent.exe",
-      "commandLineArgs": "ConsoleApp1/pipeline.yml --work \"C:\\agent\\_work\"  --id 2",
+      "executablePath": "$(SolutionDir)\\LocalAgent\\bin\\Debug\\net9.0\\LocalAgent.exe",
+      "commandLineArgs": ". ConsoleApp1/pipeline.yml --work \"C:\\agent\\_work\"  --id 2",
       "workingDirectory": "$(SolutionDir)\\Samples"
     },
     "LocalAgent ConsoleApp1": {
