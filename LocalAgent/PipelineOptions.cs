@@ -135,7 +135,8 @@ namespace LocalAgent
         /// The path to the yaml pipeline file, which acts as the entry point for the pipeline build process
         /// </summary>
         [Value(1, MetaName = "yml",
-            HelpText = "Relative YAML Path: The path to the yaml pipeline file, which acts as the entry point for the pipeline build process", Required = true)]
+            HelpText = "Relative YAML Path: The path to the yaml pipeline file, which acts as the entry point for the pipeline build process", 
+            Required = true)]
 
         public string YamlPath { get; set; }
     }
