@@ -2,6 +2,7 @@
 using LocalAgent.Variables;
 using NLog;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace LocalAgent.Runners.Base
 {
@@ -37,14 +38,22 @@ namespace LocalAgent.Runners.Base
             //    stage?.Variables, 
             //    job?.Variables);
 
-            var processInfo = new ProcessStartInfo("cmd.exe", $"/C {script}")
+            ProcessStartInfo processInfo;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                WorkingDirectory = workingDirectory,
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            };
+                processInfo = new ProcessStartInfo("cmd.exe", $"/C {script}");
+            }
+            else
+            {
+                processInfo = new ProcessStartInfo("/usr/bin/env", $"bash -c \"{script}\"");
+            }
+
+            processInfo.WorkingDirectory = workingDirectory;
+            processInfo.CreateNoWindow = true;
+            processInfo.UseShellExecute = false;
+            processInfo.RedirectStandardOutput = true;
+            processInfo.RedirectStandardError = true;
+            ;
 
             return RunProcess(processInfo, null, null, context);
         }

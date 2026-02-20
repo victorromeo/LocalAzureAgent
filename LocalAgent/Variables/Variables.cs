@@ -117,6 +117,10 @@ namespace LocalAgent.Variables
             NugetFolder = options.NugetFolder;
             BackgroundService = options.BackgroundService;
 
+            var agentWorkFolder = string.IsNullOrWhiteSpace(options.AgentWorkFolder)
+                ? Environment.CurrentDirectory
+                : Path.GetFullPath(options.AgentWorkFolder);
+
             AgentVariables = new AgentVariables()
             {
                 AgentBuildDirectory = options.AgentBuildDirectory ?? string.Empty, // GetPath(Environment.CurrentDirectory, options.AgentBuildDirectory ?? string.Empty),
@@ -130,7 +134,7 @@ namespace LocalAgent.Variables
                 AgentOs = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
                 AgentOsArchitecture = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString(),
                 AgentTempDirectory = options.AgentTempDirectory,
-                AgentWorkFolder = options.AgentWorkFolder // GetPath(Environment.CurrentDirectory, options.AgentWorkFolder)
+                AgentWorkFolder = agentWorkFolder
             };
             
             WorkFolderBase = options.BuildInplace

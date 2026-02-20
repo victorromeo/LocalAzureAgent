@@ -1,0 +1,77 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run ConsoleApp1 Pipeline",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/LocalAgent/LocalAgent.csproj",
+        "--",
+        "ConsoleApp1",
+        "pipeline.yml",
+        "--work",
+        "work",
+        "--id",
+        "1"
+      ],
+      "cwd": "${workspaceFolder}/Samples",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "env": {
+        "TeamProject": "TP"
+      }
+    },
+    {
+      "name": "Run WebApplication1 Pipeline",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/LocalAgent/LocalAgent.csproj",
+        "--",
+        "WebApplication1",
+        "pipeline.yml",
+        "--work",
+        "work",
+        "--id",
+        "2"
+      ],
+      "cwd": "${workspaceFolder}/Samples",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "env": {
+        "TeamProject": "TP"
+      }
+    },
+    {
+      "name": "Run WindowsFormsApp1 Pipeline",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/LocalAgent/LocalAgent.csproj",
+        "--",
+        "WindowsFormsApp1",
+        "pipeline.yml",
+        "--work",
+        "work",
+        "--id",
+        "3"
+      ],
+      "cwd": "${workspaceFolder}/Samples",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "env": {
+        "TeamProject": "TP"
+      }
+    }
+  ]
+}

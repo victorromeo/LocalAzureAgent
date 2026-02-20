@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
+using LocalAgent.Utilities;
 using LocalAgent.Models;
 using NLog;
 
@@ -29,11 +31,6 @@ namespace LocalAgent.Runners.Task
         public bool Verbose => FromInputBool("verbose");
         public bool Quiet => FromInputBool("quiet");
 
-        public virtual string PathTo7Zip(PipelineContext context) {
-            
-            return Path.Combine(context.Variables.AgentVariables.AgentHomeDirectory, "7za.exe");
-        }
-
         public ArchiveFilesRunner(StepTask stepTask)
             : base(stepTask)
         {
@@ -42,23 +39,90 @@ namespace LocalAgent.Runners.Task
 
         public override StatusTypes RunInternal(PipelineContext context, IStageExpectation stage, IJobExpectation job)
         {
-            var command = new CommandLineCommandBuilder(PathTo7Zip(context));
+            var root = context.Variables.Eval(
+                RootFolderOrFile,
+                context.Pipeline?.Variables,
+                stage?.Variables,
+                job?.Variables,
+                null).ToPath();
 
-            command.Arg($"a {ArchiveFile}");
-            command.ArgIf(Verbose, "-bb3");
-            command.ArgIf(Quiet, "-bb0");
-            command.ArgIf(ReplaceExistingArchive, "-aoa");
-            command.ArgIf(ArchiveType, $"-t{ArchiveType}");
+            var archiveFile = context.Variables.Eval(
+                ArchiveFile,
+                context.Pipeline?.Variables,
+                stage?.Variables,
+                job?.Variables,
+                null).ToPath();
 
-            command.Arg(IncludeRootFolder
-                    ? $"{RootFolderOrFile}"
-                    : $"{RootFolderOrFile}/*");
+            if (string.IsNullOrWhiteSpace(root))
+            {
+                Logger.Warn("ArchiveFiles task missing rootFolderOrFile.");
+                return StatusTypes.Warning;
+            }
 
-            var process = command.Compile(context, stage, job, StepTask);
+            if (string.IsNullOrWhiteSpace(archiveFile))
+            {
+                Logger.Warn("ArchiveFiles task missing archiveFile.");
+                return StatusTypes.Warning;
+            }
 
-            Logger.Info($"Command: {process.FileName} {process.Arguments}");
+            var archiveType = string.IsNullOrWhiteSpace(ArchiveType)
+                ? "zip"
+                : ArchiveType.Trim();
 
-            return RunProcess(process, null, null, context);
+            if (!archiveType.Equals("zip", StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.Warn($"Archive type '{archiveType}' is not supported on this platform. Only 'zip' is supported.");
+                return StatusTypes.Warning;
+            }
+
+            try
+            {
+                if (File.Exists(archiveFile))
+                {
+                    if (ReplaceExistingArchive)
+                    {
+                        File.Delete(archiveFile);
+                    }
+                    else
+                    {
+                        Logger.Warn($"Archive already exists: {archiveFile}");
+                        return StatusTypes.Warning;
+                    }
+                }
+
+                var archiveDirectory = Path.GetDirectoryName(archiveFile);
+                if (!string.IsNullOrWhiteSpace(archiveDirectory))
+                {
+                    Directory.CreateDirectory(archiveDirectory);
+                }
+
+                if (Directory.Exists(root))
+                {
+                    ZipFile.CreateFromDirectory(
+                        root,
+                        archiveFile,
+                        CompressionLevel.Optimal,
+                        IncludeRootFolder);
+                }
+                else if (File.Exists(root))
+                {
+                    using var archive = ZipFile.Open(archiveFile, ZipArchiveMode.Create);
+                    archive.CreateEntryFromFile(root, Path.GetFileName(root), CompressionLevel.Optimal);
+                }
+                else
+                {
+                    Logger.Warn($"ArchiveFiles root not found: {root}");
+                    return StatusTypes.Warning;
+                }
+
+                Logger.Info($"Archive created: {archiveFile}");
+                return StatusTypes.InProgress;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                return StatusTypes.Error;
+            }
         }
 
         public static bool? IsDirectory(string path)

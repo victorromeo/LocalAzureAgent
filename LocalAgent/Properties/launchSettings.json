@@ -3,7 +3,7 @@
     "LocalAgent": {
       "commandName": "Executable",
       "executablePath": "$(SolutionDir)\\LocalAgent\\bin\\Debug\\net9.0\\LocalAgent.exe",
-      "commandLineArgs": ". ConsoleApp1/pipeline.yml --work \"C:\\agent\\_work\"  --id 2",
+      "commandLineArgs": "ConsoleApp1 pipeline.yml --work \"work\" --id 1",
       "workingDirectory": "$(SolutionDir)\\Samples"
     },
     "LocalAgent ConsoleApp1": {

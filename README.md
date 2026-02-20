@@ -105,6 +105,18 @@ LocalAgent.exe <source> <yaml> <options>
   yml (pos. 1)       Required. Relative YAML Path: The path to the yaml pipeline file, which acts as the entry point for the pipeline build process
 ```
 
+## Secrets and logging
+
+LocalAzureAgent masks any values registered as secrets before writing to logs (including evaluated variable output). To mark a value as secret, emit a `task.setvariable` command with `isSecret=true` from your scripts:
+
+```txt
+##vso[task.setvariable variable=ApiKey;isSecret=true]supersecret
+```
+
+Notes:
+- Secrets are masked as `********` in log output.
+- Avoid echoing secrets directly; set them as secret variables instead.
+
 ## Samples
 
 ### Console Application

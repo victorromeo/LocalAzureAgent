@@ -122,6 +122,25 @@ namespace LocalAgent
             new FileUtils().DeleteFolderContent(Variables[VariableNames.AgentTempDirectory].ToPath());
         }
 
+        public void CleanArchiveFolder()
+        {
+            var archivePath = Variables[VariableNames.BuildArtifactStagingDirectory].ToPath();
+            if (string.IsNullOrWhiteSpace(archivePath))
+            {
+                Logger.Warn("Archive folder path is empty; skipping clean.");
+                return;
+            }
+
+            if (!Directory.Exists(archivePath))
+            {
+                new FileUtils().CreateFolder(archivePath);
+                return;
+            }
+
+            Logger.Info($"Cleaning Archive Folder: {archivePath}");
+            new FileUtils().DeleteFolderContent(archivePath);
+        }
+
         public string CreateTempScript(string content, string extension)
         {
             var tempDirectory = Variables[VariableNames.AgentTempDirectory].ToPath();

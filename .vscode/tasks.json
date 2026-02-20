@@ -18,8 +18,8 @@
             "command": "dotnet",
             "type": "process",
             "args": [
-                "build",
-                "${workspaceFolder}/LocalAgent.Test/LocalAgent.Test.csproj",
+                "test",
+                "${workspaceFolder}/LocalAgent.Tests/LocalAgent.Tests.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],

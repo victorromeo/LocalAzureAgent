@@ -38,6 +38,7 @@ namespace LocalAgent
                 context = new PipelineContext(_o).Prepare().LoadPipeline();
                 if (context != null)
                 {
+                    context.CleanArchiveFolder();
                     LogEvaluatedVariables(context, null, null);
                     Logger.Info($"Pipeline\n{context.Serialize()}");
                     RunPipeline(context);
@@ -119,7 +120,7 @@ namespace LocalAgent
             IStageExpectation stage,
             IList<IJobExpectation> jobs)
         {
-            if (jobs?.Count <= 0)
+            if (jobs == null || jobs.Count <= 0)
             {
                 return StatusTypes.InProgress;
             }
@@ -351,7 +352,8 @@ namespace LocalAgent
                     _ => value.ToString()
                 };
 
-                Logger.Info($"  {key} = {rendered}");
+                var safeRendered = context?.MaskSecrets(rendered) ?? rendered;
+                Logger.Info($"  {key} = {safeRendered}");
             }
         }
 
