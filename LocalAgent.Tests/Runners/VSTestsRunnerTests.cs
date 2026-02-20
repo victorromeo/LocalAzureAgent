@@ -6,11 +6,18 @@ using LocalAgent.Runners.Task;
 using LocalAgent.Variables;
 using Moq;
 using NLog;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace LocalAgent.Tests
 {
     public class VSTestsRunnerTests {
+        private static (string FileName, string Arguments) BuildShell(string command)
+        {
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? ("cmd.exe", $"/C \"{command}\"")
+                : ("/bin/bash", $"-c \"{command}\"");
+        }
         public Mock<VSTestRunner> BuildRunner(StepTask task, Action<ProcessStartInfo,DataReceivedEventHandler,DataReceivedEventHandler> callback) {
             var runner = new Mock<VSTestRunner>(MockBehavior.Loose, task) {
                 CallBase = true
@@ -36,9 +43,9 @@ namespace LocalAgent.Tests
         }
     
         [Theory]
-        [InlineData("","", "/C \"C:\\pathToVsTest\\vstest.console.exe testABC.dll testDEF.dll\"")]
-        [InlineData("somePlatform","someConfig", "/C \"C:\\pathToVsTest\\vstest.console.exe testABC.dll testDEF.dll /Platform:somePlatform /Configuration:someConfig\"")]
-        public void Run(string platform, string configuration, string expected) {
+        [InlineData("","", "C:\\pathToVsTest\\vstest.console.exe testABC.dll testDEF.dll")]
+        [InlineData("somePlatform","someConfig", "C:\\pathToVsTest\\vstest.console.exe testABC.dll testDEF.dll /Platform:somePlatform /Configuration:someConfig")]
+        public void Run(string platform, string configuration, string rawCommand) {
             // Arrange
             ProcessStartInfo actualStartInfo = null;
 
@@ -74,8 +81,9 @@ namespace LocalAgent.Tests
             // Assert
             runner.Verify(i=>i.RunProcess(It.IsAny<ProcessStartInfo>(), null,null));
             
-            Assert.Equal("cmd.exe", actualStartInfo.FileName);
-            Assert.Equal(expected, actualStartInfo.Arguments);
+            var expected = BuildShell(rawCommand);
+            Assert.Equal(expected.FileName, actualStartInfo.FileName);
+            Assert.Equal(expected.Arguments, actualStartInfo.Arguments);
         }
 
         [Fact]
@@ -123,10 +131,11 @@ namespace LocalAgent.Tests
             // Assert
             runner.Verify(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null));
 
-            Assert.Equal("cmd.exe", actualStartInfo.FileName);
-            Assert.Equal(
-                "/C \"C:\\pathToVsTest\\vstest.console.exe testABC.dll testDEF.dll /Tests:MyTest /TestCaseFilter:\"Category=Unit\" /TestAdapterPath:customAdapters /Settings:settings.runsettings /Parallel /InIsolation\"",
-                actualStartInfo.Arguments);
+            var expected = BuildShell(
+                "C:\\pathToVsTest\\vstest.console.exe testABC.dll testDEF.dll /Tests:MyTest /TestCaseFilter:\"Category=Unit\" /TestAdapterPath:customAdapters /Settings:settings.runsettings /Parallel /InIsolation");
+
+            Assert.Equal(expected.FileName, actualStartInfo.FileName);
+            Assert.Equal(expected.Arguments, actualStartInfo.Arguments);
         }
     }
 }

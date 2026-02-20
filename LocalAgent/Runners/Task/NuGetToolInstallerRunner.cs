@@ -39,6 +39,7 @@ namespace LocalAgent.Runners.Task
                 var installPath = context.Variables[VariableNames.AgentHomeDirectory];
                 var nugetPath = $"{installPath}/nuget.exe".ToPath();
 
+                // Use HttpClient to avoid obsolete WebClient APIs; blocking is acceptable for this setup task.
                 using var httpClient = new HttpClient();
                 status = StatusTypes.InProgress;
                 var payload = httpClient.GetByteArrayAsync(downloadUrl).GetAwaiter().GetResult();

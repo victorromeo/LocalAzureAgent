@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using LocalAgent.Models;
 using LocalAgent.Variables;
 using NLog;
@@ -34,9 +35,14 @@ namespace LocalAgent.Runners.Task
                 return StatusTypes.Warning;
             }
 
+            // Script input may be a scalar or a list; list items are joined with newlines during deserialization.
             var workingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory)
                 ? context.Variables[VariableNames.BuildSourcesDirectory]
                 : context.Variables[WorkingDirectory];
+
+            workingDirectory = string.IsNullOrWhiteSpace(workingDirectory)
+                ? string.Empty
+                : workingDirectory.ToPath();
 
             var command = string.IsNullOrWhiteSpace(workingDirectory)
                 ? $"/C \"{Script}\""
@@ -49,13 +55,11 @@ namespace LocalAgent.Runners.Task
                 job?.Variables,
                 null);
 
-            var processInfo = new ProcessStartInfo("cmd.exe", compiled)
-            {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            };
+            var processInfo = CommandLineCommandBuilder.CreateShellProcessStartInfo(compiled);
+            processInfo.CreateNoWindow = true;
+            processInfo.UseShellExecute = false;
+            processInfo.RedirectStandardOutput = true;
+            processInfo.RedirectStandardError = true;
 
             GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
 

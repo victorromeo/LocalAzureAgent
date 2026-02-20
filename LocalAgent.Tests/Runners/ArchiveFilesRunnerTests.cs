@@ -4,6 +4,7 @@ using System.Diagnostics;
 using LocalAgent.Models;
 using LocalAgent.Runners.Task;
 using LocalAgent.Variables;
+using System.Runtime.InteropServices;
 using Moq;
 using NLog;
 using Xunit;
@@ -11,6 +12,13 @@ using Xunit;
 namespace LocalAgent.Tests
 {
     public class ArchiveFilesRunnerTests {
+
+        private static (string FileName, string Arguments) BuildShell(string command)
+        {
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? ("cmd.exe", $"/C \"{command}\"")
+                : ("/bin/bash", $"-c \"{command}\"");
+        }
 
         public Mock<ArchiveFilesRunner> BuildRunner(StepTask task, Action<ProcessStartInfo,DataReceivedEventHandler,DataReceivedEventHandler> callback) {
             var runner = new Mock<ArchiveFilesRunner>(MockBehavior.Loose, task) {
@@ -32,9 +40,9 @@ namespace LocalAgent.Tests
         }
 
         [Theory]
-        [InlineData("true","true","true","false","/C \"C:\\pathTo7Zip\\7Zip.exe a someArchiveFile -bb3 -aoa -tsomeArchiveType someRoot\"")]
-        [InlineData("false","false","false","true","/C \"C:\\pathTo7Zip\\7Zip.exe a someArchiveFile -bb0 -tsomeArchiveType someRoot/*\"")]
-        public void RunTests(string includeRootFolder, string replaceExistingArchive, string verbose, string quiet, string result) {
+        [InlineData("true","true","true","false","C:\\pathTo7Zip\\7Zip.exe a someArchiveFile -bb3 -aoa -tsomeArchiveType someRoot")]
+        [InlineData("false","false","false","true","C:\\pathTo7Zip\\7Zip.exe a someArchiveFile -bb0 -tsomeArchiveType someRoot/*")]
+        public void RunTests(string includeRootFolder, string replaceExistingArchive, string verbose, string quiet, string rawCommand) {
             // Arrange
             var task = new StepTask()
             {
@@ -72,8 +80,9 @@ namespace LocalAgent.Tests
 
             // Assert
             runner.Verify(i=>i.RunProcess(It.IsAny<ProcessStartInfo>(),null,null));
-            Assert.Equal("cmd.exe", actualStartInfo.FileName);
-            Assert.Equal(result, actualStartInfo.Arguments);
+            var expected = BuildShell(rawCommand);
+            Assert.Equal(expected.FileName, actualStartInfo.FileName);
+            Assert.Equal(expected.Arguments, actualStartInfo.Arguments);
         }
     }
 }

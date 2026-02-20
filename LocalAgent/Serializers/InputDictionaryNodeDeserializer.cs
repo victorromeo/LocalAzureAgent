@@ -23,6 +23,7 @@ namespace LocalAgent.Serializers
                 return _inner.Deserialize(reader, expectedType, nestedObjectDeserializer, out value);
             }
 
+            // Azure Pipelines allows inputs to be scalars or sequences of scalars; normalize to a string dictionary.
             var dictionary = new Dictionary<string, string>();
 
             reader.Consume<MappingStart>();
@@ -51,6 +52,7 @@ namespace LocalAgent.Serializers
 
             if (reader.Accept<SequenceStart>(out _))
             {
+                // Join multi-line sequence inputs into a single newline-delimited string.
                 var items = new List<string>();
                 reader.Consume<SequenceStart>();
 

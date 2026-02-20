@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using LocalAgent.Models;
 
 namespace LocalAgent.Runners 
@@ -79,15 +80,15 @@ namespace LocalAgent.Runners
         public override string ToString()
         {
             return (_workingDirectory == null)
-                ? $"/C \"{_executable} {_command}\""
-                : $"/C \"cd {_workingDirectory} && {_executable} {_command}\"";
+                ? $"{_executable} {_command}".Trim()
+                : $"cd {QuotePath(_workingDirectory)} && {_executable} {_command}".Trim();
         }
 
         public virtual ProcessStartInfo Compile(PipelineContext context, IStageExpectation stage, IJobExpectation job, IStepExpectation step)
         {
             Eval(context, stage,job, step);
 
-            var processInfo = new ProcessStartInfo("cmd.exe", _compiled)
+            var processInfo = CreateShellProcessStartInfo(_compiled)
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -96,6 +97,23 @@ namespace LocalAgent.Runners
             };
 
             return processInfo;
+        }
+
+        public static ProcessStartInfo CreateShellProcessStartInfo(string command)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return new ProcessStartInfo("cmd.exe", $"/C \"{command}\"");
+            }
+
+            return new ProcessStartInfo("/bin/bash", $"-c \"{command}\"");
+        }
+
+        private static string QuotePath(string path)
+        {
+            return string.IsNullOrWhiteSpace(path)
+                ? string.Empty
+                : $"\"{path}\"";
         }
     }
 }
