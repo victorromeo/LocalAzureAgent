@@ -90,6 +90,8 @@ LocalAgent.exe <source> <yaml> <options>
 
   --nuget            (Default: ../nuget) Folder used to store Nuget Packages for use by the pipeline
 
+  --inplace          (Default: false) If true, the build does not occur in a work folder, but instead builds in the source folder
+
   --help             Display this help screen.
 
   --version          Display version information.
