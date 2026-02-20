@@ -28,12 +28,13 @@ namespace LocalAgent
 
         public int Run()
         {
+            PipelineContext context = null;
             try
             {
                 Logger.Info("Pipeline started");
 
                 // Create the Build context and load the pipeline
-                var context = new PipelineContext(_o).Prepare().LoadPipeline();
+                context = new PipelineContext(_o).Prepare().LoadPipeline();
                 if (context != null)
                 {
                     Logger.Info($"Pipeline\n{context.Serialize()}");
@@ -46,6 +47,11 @@ namespace LocalAgent
             }
             finally
             {
+                if (context != null)
+                {
+                    context.CleanupTempFiles();
+                    context.CleanTempFolder();
+                }
                 Logger.Info("Pipeline finished");
             }
 

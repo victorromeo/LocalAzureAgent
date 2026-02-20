@@ -45,29 +45,50 @@ namespace LocalAgent.Runners.Task
                 ? string.Empty
                 : workingDirectory.ToPath();
 
-            var command = string.IsNullOrWhiteSpace(workingDirectory)
-                ? $"/C \"{Script}\""
-                : $"/C \"cd {workingDirectory} && {Script}\"";
-
-            var compiled = context.Variables.Eval(
-                command,
+            var evaluatedScript = context.Variables.Eval(
+                Script,
                 context.Pipeline?.Variables,
                 stage?.Variables,
                 job?.Variables,
                 null);
+
+            var isMultiline = evaluatedScript.Contains("\n", StringComparison.Ordinal);
+            var command = evaluatedScript;
+
+            if (isMultiline)
+            {
+                var normalized = evaluatedScript.Replace("\r\n", "\n", StringComparison.Ordinal);
+                var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+                var extension = isWindows ? ".cmd" : ".sh";
+
+                var scriptBody = isWindows
+                    ? normalized.Replace("\n", "\r\n", StringComparison.Ordinal)
+                    : $"#!/usr/bin/env bash\n{normalized}";
+
+                var scriptPath = context.CreateTempScript(scriptBody, extension);
+                command = isWindows
+                    ? $"\"{scriptPath}\""
+                    : $"bash \"{scriptPath}\"";
+            }
+
+            var compiled = command;
 
             var processInfo = CommandLineCommandBuilder.CreateShellProcessStartInfo(compiled);
             processInfo.CreateNoWindow = true;
             processInfo.UseShellExecute = false;
             processInfo.RedirectStandardOutput = true;
             processInfo.RedirectStandardError = true;
+            if (!string.IsNullOrWhiteSpace(workingDirectory))
+            {
+                processInfo.WorkingDirectory = workingDirectory;
+            }
 
             GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
 
             return RunCmdProcess(processInfo, FailOnStderr);
         }
 
-        private StatusTypes RunCmdProcess(ProcessStartInfo processInfo, bool failOnStderr)
+        protected virtual StatusTypes RunCmdProcess(ProcessStartInfo processInfo, bool failOnStderr)
         {
             Process process = null;
             StatusTypes status = StatusTypes.InProgress;

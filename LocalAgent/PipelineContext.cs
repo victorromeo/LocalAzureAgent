@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using LocalAgent.Models;
 using LocalAgent.Serializers;
 using LocalAgent.Utilities;
@@ -13,6 +14,7 @@ namespace LocalAgent
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         private PipelineOptions _pipelineOptions;
+        private readonly List<string> _tempFiles = new();
         public PipelineContext(PipelineOptions options)
             : this(new Variables.Variables().Load(options))
         { 
@@ -112,8 +114,55 @@ namespace LocalAgent
 
         public void CleanTempFolder()
         {
+            CleanupTempFiles();
             Logger.Info($"Cleaning Temp Folder: {Variables[VariableNames.AgentTempDirectory]}");
             new FileUtils().DeleteFolderContent(Variables[VariableNames.AgentTempDirectory].ToPath());
+        }
+
+        public string CreateTempScript(string content, string extension)
+        {
+            var tempDirectory = Variables[VariableNames.AgentTempDirectory].ToPath();
+            new FileUtils().CreateFolder(tempDirectory);
+
+            var filePath = Path.Combine(tempDirectory, $"localagent_{Guid.NewGuid():N}{extension}");
+            File.WriteAllText(filePath, content ?? string.Empty);
+            _tempFiles.Add(filePath);
+
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                try
+                {
+                    File.SetUnixFileMode(filePath,
+                        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                        UnixFileMode.GroupRead | UnixFileMode.GroupExecute);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn(ex, $"Failed to set executable bit on {filePath}");
+                }
+            }
+
+            return filePath;
+        }
+
+        public void CleanupTempFiles()
+        {
+            foreach (var filePath in _tempFiles.ToList())
+            {
+                try
+                {
+                    if (File.Exists(filePath))
+                    {
+                        File.Delete(filePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn(ex, $"Failed to delete temp file {filePath}");
+                }
+            }
+
+            _tempFiles.Clear();
         }
 
         public PipelineContext LoadPipeline(Pipeline pipeline = null)

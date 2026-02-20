@@ -79,9 +79,7 @@ namespace LocalAgent.Runners
 
         public override string ToString()
         {
-            return (_workingDirectory == null)
-                ? $"{_executable} {_command}".Trim()
-                : $"cd {QuotePath(_workingDirectory)} && {_executable} {_command}".Trim();
+            return $"{_executable} {_command}".Trim();
         }
 
         public virtual ProcessStartInfo Compile(PipelineContext context, IStageExpectation stage, IJobExpectation job, IStepExpectation step)
@@ -93,6 +91,9 @@ namespace LocalAgent.Runners
             processInfo.UseShellExecute = false;
             processInfo.RedirectStandardOutput = true;
             processInfo.RedirectStandardError = true;
+            processInfo.WorkingDirectory = string.IsNullOrWhiteSpace(_workingDirectory)
+                ? processInfo.WorkingDirectory
+                : _workingDirectory;
 
             return processInfo;
         }
@@ -107,11 +108,5 @@ namespace LocalAgent.Runners
             return new ProcessStartInfo("/bin/bash", $"-c \"{command}\"");
         }
 
-        private static string QuotePath(string path)
-        {
-            return string.IsNullOrWhiteSpace(path)
-                ? string.Empty
-                : $"\"{path}\"";
-        }
     }
 }
