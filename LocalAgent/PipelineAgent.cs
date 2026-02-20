@@ -119,10 +119,17 @@ namespace LocalAgent
             IStageExpectation stage,
             IList<IJobExpectation> jobs)
         {
-            var status = StatusTypes.InProgress;
-
-            if (jobs?.Count > 0)
+            if (jobs?.Count <= 0)
             {
+                return StatusTypes.InProgress;
+            }
+
+            var hasDependencies = jobs.OfType<JobStandard>()
+                .Any(j => j.DependsOn != null && j.DependsOn.Count > 0);
+
+            if (!hasDependencies)
+            {
+                var status = StatusTypes.InProgress;
                 for (var j = 0; CanContinue(status, jobs[j]) && j < jobs.Count; j++)
                 {
                     var job = jobs[j];
@@ -130,9 +137,113 @@ namespace LocalAgent
                     Logger.Info($"JOB: ({j + 1}/{jobs.Count}) {job.DisplayName}");
                     status = RunJob(context, stage, job);
                 }
+
+                return status;
             }
 
-            return status;
+            var jobList = jobs.ToList();
+            var jobMap = jobList
+                .Where(job => !string.IsNullOrWhiteSpace(GetJobName(job)))
+                .ToDictionary(GetJobName, job => job, StringComparer.OrdinalIgnoreCase);
+
+            var pending = new HashSet<IJobExpectation>(jobList);
+            var results = new Dictionary<string, StatusTypes>(StringComparer.OrdinalIgnoreCase);
+            var overall = StatusTypes.Complete;
+
+            while (pending.Count > 0)
+            {
+                var progress = false;
+
+                foreach (var job in pending.ToList())
+                {
+                    var jobName = GetJobName(job);
+                    var dependencies = GetJobDependsOn(job);
+
+                    if (dependencies.Count > 0 && dependencies.Any(dep => !jobMap.ContainsKey(dep)))
+                    {
+                        Logger.Error($"JOB: '{jobName}' has missing dependencies: {string.Join(", ", dependencies.Where(dep => !jobMap.ContainsKey(dep)))}");
+                        results[jobName] = StatusTypes.Error;
+                        overall = StatusTypes.Error;
+                        pending.Remove(job);
+                        progress = true;
+                        continue;
+                    }
+
+                    if (dependencies.Any(dep => results.TryGetValue(dep, out var depStatus) && depStatus == StatusTypes.Error))
+                    {
+                        Logger.Warn($"JOB: '{jobName}' skipped because a dependency failed.");
+                        results[jobName] = StatusTypes.Skipped;
+                        pending.Remove(job);
+                        progress = true;
+                        continue;
+                    }
+
+                    if (dependencies.Any(dep => !results.ContainsKey(dep)))
+                    {
+                        continue;
+                    }
+
+                    Console.WriteLine();
+                    Logger.Info($"JOB: ({jobList.IndexOf(job) + 1}/{jobs.Count}) {job.DisplayName}");
+                    var status = RunJob(context, stage, job);
+                    if (job is JobStandard standard && standard.ContinueOnError && status == StatusTypes.Error)
+                    {
+                        status = StatusTypes.Warning;
+                    }
+
+                    results[jobName] = status;
+                    overall = CombineStatus(overall, status);
+                    pending.Remove(job);
+                    progress = true;
+                }
+
+                if (!progress)
+                {
+                    Logger.Error("JOB: dependency resolution failed due to a cycle or unresolved dependency.");
+                    overall = StatusTypes.Error;
+                    break;
+                }
+            }
+
+            return overall;
+        }
+
+        private static StatusTypes CombineStatus(StatusTypes current, StatusTypes next)
+        {
+            if (current == StatusTypes.Error || next == StatusTypes.Error)
+            {
+                return StatusTypes.Error;
+            }
+
+            if (current == StatusTypes.Warning || next == StatusTypes.Warning)
+            {
+                return StatusTypes.Warning;
+            }
+
+            if (current == StatusTypes.Skipped || next == StatusTypes.Skipped)
+            {
+                return StatusTypes.Warning;
+            }
+
+            return StatusTypes.Complete;
+        }
+
+        private static string GetJobName(IJobExpectation job)
+        {
+            return job switch
+            {
+                JobStandard standard => standard.Job ?? standard.DisplayName ?? string.Empty,
+                JobDeployment deployment => deployment.Deployment ?? deployment.DisplayName ?? string.Empty,
+                JobTemplateReference template => template.Template ?? template.DisplayName ?? string.Empty,
+                _ => job?.DisplayName ?? string.Empty
+            };
+        }
+
+        private static IList<string> GetJobDependsOn(IJobExpectation job)
+        {
+            return job is JobStandard standard && standard.DependsOn != null
+                ? standard.DependsOn
+                : new List<string>();
         }
 
         private static StatusTypes RunJob(PipelineContext context, 
