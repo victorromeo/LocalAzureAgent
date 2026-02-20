@@ -17,6 +17,7 @@ namespace LocalAgent.Runners
         {
             {ArchiveFilesRunner.Task, typeof(ArchiveFilesRunner)},
             {BatchScriptRunner.Task, typeof(BatchScriptRunner)},
+            {CmdLineRunner.Task, typeof(CmdLineRunner)},
             {CopyFilesRunner.Task, typeof(CopyFilesRunner)},
             {DotnetCliRunner.Task, typeof(DotnetCliRunner)},
             {ExtractFilesRunner.Task, typeof(ExtractFilesRunner)},

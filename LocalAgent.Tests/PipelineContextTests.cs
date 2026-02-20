@@ -147,5 +147,47 @@ jobs:
 
             var actual = PipelineContext.Deserialize(test);  
         }
+
+        [Fact]
+        public void Deserialize_CmdLineScriptListInput()
+        {
+            var test = @"
+jobs:
+- job: CmdLineJob
+  steps:
+  - task: CmdLine@2
+    inputs:
+      script:
+      - echo one
+      - echo two
+";
+
+            var actual = PipelineContext.Deserialize(test);
+            var job = (JobStandard) actual.Jobs[0];
+            var step = (StepTask) job.Steps[0];
+
+            step.Inputs["script"].Should().Be("echo one\necho two");
+        }
+
+        [Fact]
+        public void Deserialize_CmdLineScriptMultilineScalar()
+        {
+            var test = @"
+jobs:
+- job: CmdLineJob
+  steps:
+  - task: CmdLine@2
+    inputs:
+      script: |
+        echo one
+        echo two
+";
+
+            var actual = PipelineContext.Deserialize(test);
+            var job = (JobStandard) actual.Jobs[0];
+            var step = (StepTask) job.Steps[0];
+
+            step.Inputs["script"].Should().Be("echo one\necho two");
+        }
     }
 }

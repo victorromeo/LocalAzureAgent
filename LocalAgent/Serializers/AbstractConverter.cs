@@ -43,6 +43,9 @@ namespace LocalAgent.Serializers
             var builder = new DeserializerBuilder()
                 .WithNamingConvention(_namingConvention)
                 .WithNodeDeserializer(
+                    inner => new InputDictionaryNodeDeserializer(inner),
+                    s => s.InsteadOf<DictionaryNodeDeserializer>())
+                .WithNodeDeserializer(
                     inner => new VariableMapNodeDeserializer(inner),
                     s => s.InsteadOf<CollectionNodeDeserializer>())
                 .WithNodeDeserializer(
