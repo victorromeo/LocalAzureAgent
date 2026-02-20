@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Linq;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -116,8 +117,9 @@ namespace LocalAgent.Tests.Security
                 method.Invoke(null, new object[] { context, null, null });
                 LogManager.Flush();
 
-                Assert.DoesNotContain(memoryTarget.Logs, log => log.Contains("supersecret"));
-                Assert.Contains(memoryTarget.Logs, log => log.Contains("ApiKey = ********"));
+                var logs = memoryTarget.Logs.ToArray();
+                Assert.DoesNotContain(logs, log => log.Contains("supersecret"));
+                Assert.Contains(logs, log => log.Contains("ApiKey = ********"));
             }
             finally
             {

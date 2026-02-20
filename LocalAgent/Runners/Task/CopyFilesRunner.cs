@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using LocalAgent.Models;
-using LocalAgent.Utilities;
 using LocalAgent.Variables;
 using NLog;
 
@@ -46,8 +45,9 @@ namespace LocalAgent.Runners.Task
                 var targetFolder = GetFolderAbsolutePath(TargetFolder, context, stage, job, StepTask);
 
                 var contents = context.Variables.Eval(Contents, context.Pipeline?.Variables, stage?.Variables, job?.Variables, null);
+                var patterns = contents.Split(new[] { ';', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-                var files = new FileUtils().FindFiles(sourceFolder, contents);
+                var files = ResolveFiles(sourceFolder, patterns);
 
                 foreach (var f in files)
                 {

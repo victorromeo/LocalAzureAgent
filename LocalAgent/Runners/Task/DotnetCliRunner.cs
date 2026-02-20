@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Linq;
 using LocalAgent.Models;
-using LocalAgent.Utilities;
 using LocalAgent.Variables;
 using NLog;
 
@@ -53,7 +52,7 @@ namespace LocalAgent.Runners.Task
             }
 
             var workingDirectory = context.Variables[VariableNames.BuildSourcesDirectory];
-            var targets = new FileUtils().FindFilesByPattern(context, workingDirectory, Projects);
+            var targets = ResolveFiles(workingDirectory, Projects);
 
             var status = StatusTypes.InProgress;
 

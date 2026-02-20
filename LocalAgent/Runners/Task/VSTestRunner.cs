@@ -93,10 +93,9 @@ namespace LocalAgent.Runners.Task
         }
 
         public virtual IList<string> GetTestTargets(PipelineContext context) {
-            return new FileUtils().FindFilesByPattern(context,
+            return ResolveFiles(
                 context.Variables[VariableNames.BuildSourcesDirectory],
-                SearchFolder.Split(";")
-                );
+                SearchFolder.Split(";", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
         }
 
         public override StatusTypes RunInternal(PipelineContext context, IStageExpectation stage, IJobExpectation job)

@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using LocalAgent.Models;
 using LocalAgent.Runners.Task;
 using LocalAgent.Variables;
-using Moq;
-using NLog;
 using Xunit;
 
 namespace LocalAgent.Tests
@@ -11,51 +12,50 @@ namespace LocalAgent.Tests
     public class MSBuildRunnerTests
     {
         [Theory]
-        [InlineData("abc/def.sln","**/*.sln","*.sln")]
-        [InlineData("abc/def.csproj;hji.csproj","**/*.csproj","*.csproj")]
-        [InlineData("abc.csproj","*.csproj","*.csproj")]
-        [InlineData("abc.csproj","abc.csproj","abc.csproj")]
-        [InlineData("abc.sln", "abc.sln", "abc.sln")]
-        [InlineData("", "abc.sln", "abc.sln")]
-        public void GetBuildTargets(string expected,string solution, string extension)
+        [InlineData("abc/def.sln","**/*.sln")]
+        [InlineData("abc/def.csproj;hji.csproj","**/*.csproj")]
+        [InlineData("abc.csproj","*.csproj")]
+        [InlineData("abc.csproj","abc.csproj")]
+        [InlineData("abc.sln", "abc.sln")]
+        [InlineData("", "abc.sln")]
+        public void GetBuildTargets(string expected, string solution)
         {
-            var step = new StepTask()
+            var baseDir = Path.Combine(Path.GetTempPath(), "LocalAgentTests", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(baseDir);
+
+            var expectedPaths = new List<string>();
+            foreach (var part in expected.Split(";", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
-                Inputs = new Dictionary<string, string>()
+                var filePath = Path.Combine(baseDir, part.Replace('/', Path.DirectorySeparatorChar));
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+                File.WriteAllText(filePath, "test");
+                expectedPaths.Add(filePath);
+            }
+
+            var step = new StepTask
+            {
+                Inputs = new Dictionary<string, string>
                 {
                     {"solution", solution}
                 }
             };
 
-            var runner = new Mock<MSBuildRunner>(step)
+            var runner = new MSBuildRunner(step);
+
+            var options = new PipelineOptions
             {
-                CallBase = true,
+                AgentWorkFolder = baseDir,
+                SourcePath = baseDir,
+                YamlPath = "pipeline.yml",
+                BuildInplace = true
             };
 
-            runner.Setup(i => i.FindProjects(
-                    It.IsAny<string>(), 
-                    It.IsIn<string>(extension), 
-                    It.IsAny<bool>()))
-                .Returns(expected.Split(";"));
+            var context = new PipelineContext(options);
+            var actual = runner.GetBuildTargets(context);
 
-            runner.Setup(i => i.FindProject(
-                    It.IsAny<string>()
-                ))
-                .Returns(expected.Split(";"));
-
-            runner.Setup(i => i.GetLogger())
-                .Returns(new NullLogger(new LogFactory()));
-
-            var options = new PipelineOptions() {
-                AgentWorkFolder = "work",
-                SourcePath = "C:\\SomeAgentPath",
-                YamlPath = "SomePipeline.yaml"
-            };
-
-            var context = new Mock<PipelineContext>(options);
-            var actual = runner.Object.GetBuildTargets(context.Object);
-
-            Assert.Equal(expected.Split(";"), actual);
+            Assert.Equal(
+                expectedPaths.OrderBy(p => p, StringComparer.OrdinalIgnoreCase),
+                actual.OrderBy(p => p, StringComparer.OrdinalIgnoreCase));
         }
     }
 }

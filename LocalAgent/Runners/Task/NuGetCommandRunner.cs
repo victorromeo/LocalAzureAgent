@@ -76,7 +76,7 @@ namespace LocalAgent.Runners.Task
 
                 var workingDirectory = context.Variables[VariableNames.BuildSourcesDirectory];
                 var restoreSolutionPatterns = RestoreSolution.Select(i=> context.Variables.Eval(i, context.Pipeline.Variables, stage?.Variables, job?.Variables));
-                var targets = new FileUtils().FindFilesByPattern(context, workingDirectory, restoreSolutionPatterns.ToList());
+                var targets = ResolveFiles(workingDirectory, restoreSolutionPatterns);
 
                 status = StatusTypes.InProgress;
 
