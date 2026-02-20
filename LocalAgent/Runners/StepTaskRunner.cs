@@ -1,50 +1,43 @@
 ﻿using System;
 using LocalAgent.Models;
+using LocalAgent.Utilities;
 
 namespace LocalAgent.Runners
 {
     public abstract class StepTaskRunner : StepRunner
     {
         protected readonly StepTask StepTask;
+        protected readonly InputNormalizationService Inputs;
 
         protected string FromInputString(string key)
         {
-            return StepTask != null && StepTask.Inputs.ContainsKey(key)
-                ? StepTask.Inputs[key]
-                : string.Empty;
+            return Inputs.GetString(key);
         }
 
         protected double FromInputDouble(string key, double value = default)
         {
-            return StepTask != null && StepTask.Inputs.ContainsKey(key)
-                ? Convert.ToDouble(StepTask.Inputs[key])
-                : value;
+            return Inputs.GetDouble(key, value);
         }
 
         protected long FromInputLong(string key, long value = default)
         {
-            return StepTask != null && StepTask.Inputs.ContainsKey(key)
-                ? Convert.ToInt64(StepTask.Inputs[key])
-                : value;
+            return Inputs.GetLong(key, value);
         }
 
         protected int FromInputInt(string key, int value = default)
         {
-            return StepTask != null && StepTask.Inputs.ContainsKey(key)
-                ? Convert.ToInt32(StepTask.Inputs[key])
-                : value;
+            return Inputs.GetInt(key, value);
         }
 
         protected bool FromInputBool(string key, bool value = default)
         {
-            return StepTask != null && StepTask.Inputs.ContainsKey(key)
-                ? Convert.ToBoolean(StepTask.Inputs[key])
-                : value;
+            return Inputs.GetBool(key, value);
         }
 
         protected StepTaskRunner(StepTask stepTask)
         {
             StepTask = stepTask;
+            Inputs = new InputNormalizationService(stepTask?.Inputs);
         }
 
         public override StatusTypes Run(PipelineContext context, IStageExpectation stage, IJobExpectation job)

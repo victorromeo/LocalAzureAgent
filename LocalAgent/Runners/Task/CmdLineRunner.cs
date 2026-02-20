@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using LocalAgent.Models;
+using LocalAgent.Utilities;
 using LocalAgent.Variables;
 using NLog;
 

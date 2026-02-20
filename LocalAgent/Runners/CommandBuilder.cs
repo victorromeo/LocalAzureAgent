@@ -88,13 +88,11 @@ namespace LocalAgent.Runners
         {
             Eval(context, stage,job, step);
 
-            var processInfo = CreateShellProcessStartInfo(_compiled)
-            {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            };
+            var processInfo = CreateShellProcessStartInfo(_compiled);
+            processInfo.CreateNoWindow = true;
+            processInfo.UseShellExecute = false;
+            processInfo.RedirectStandardOutput = true;
+            processInfo.RedirectStandardError = true;
 
             return processInfo;
         }
