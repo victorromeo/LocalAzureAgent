@@ -20,14 +20,14 @@ namespace LocalAgent.Tests
                 : ("/bin/bash", $"-c \"{command}\"");
         }
 
-        private static Mock<DockerRunner> BuildRunner(StepTask task, Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler> callback)
+        private static Mock<DockerRunner> BuildRunner(StepTask task, Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler, PipelineContext> callback)
         {
             var runner = new Mock<DockerRunner>(MockBehavior.Loose, task) { CallBase = true };
 
             runner.Setup(i => i.GetLogger())
                 .Returns(new NullLogger(new LogFactory()));
 
-            runner.Setup(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null))
+            runner.Setup(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null, It.IsAny<PipelineContext>()))
                 .Callback(callback)
                 .Returns(StatusTypes.InProgress)
                 .Verifiable();
@@ -52,7 +52,7 @@ namespace LocalAgent.Tests
             };
 
             ProcessStartInfo actualStartInfo = null;
-            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler> callback = (info, _, __) =>
+            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler, PipelineContext> callback = (info, _, __, ___) =>
             {
                 actualStartInfo = info;
             };
@@ -69,7 +69,7 @@ namespace LocalAgent.Tests
 
             runner.Object.Run(context, new Mock<IStageExpectation>().Object, new Mock<IJobExpectation>().Object);
 
-            runner.Verify(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null));
+            runner.Verify(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null, It.IsAny<PipelineContext>()));
             var expected = BuildShell("docker build -f Dockerfile -t myapp:1.0.0 -t myapp:latest --build-arg ENV=prod .");
             Assert.Equal(expected.FileName, actualStartInfo.FileName);
             Assert.Equal(expected.Arguments, actualStartInfo.Arguments);
@@ -89,7 +89,7 @@ namespace LocalAgent.Tests
             };
 
             var captured = new List<ProcessStartInfo>();
-            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler> callback = (info, _, __) =>
+            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler, PipelineContext> callback = (info, _, __, ___) =>
             {
                 captured.Add(info);
             };

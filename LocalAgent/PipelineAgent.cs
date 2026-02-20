@@ -139,6 +139,7 @@ namespace LocalAgent
             IStageExpectation stage, 
             IJobExpectation job)
         {
+            context.ClearRuntimeVariables();
             return RunSteps(context, stage, job, GetSteps(job));
         }
 

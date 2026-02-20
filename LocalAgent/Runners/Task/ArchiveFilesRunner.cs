@@ -58,7 +58,7 @@ namespace LocalAgent.Runners.Task
 
             Logger.Info($"Command: {process.FileName} {process.Arguments}");
 
-            return RunProcess(process);
+            return RunProcess(process, null, null, context);
         }
 
         public static bool? IsDirectory(string path)

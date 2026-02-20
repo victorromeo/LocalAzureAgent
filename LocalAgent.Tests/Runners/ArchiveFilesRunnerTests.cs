@@ -20,7 +20,7 @@ namespace LocalAgent.Tests
                 : ("/bin/bash", $"-c \"{command}\"");
         }
 
-        public Mock<ArchiveFilesRunner> BuildRunner(StepTask task, Action<ProcessStartInfo,DataReceivedEventHandler,DataReceivedEventHandler> callback) {
+        public Mock<ArchiveFilesRunner> BuildRunner(StepTask task, Action<ProcessStartInfo,DataReceivedEventHandler,DataReceivedEventHandler,PipelineContext> callback) {
             var runner = new Mock<ArchiveFilesRunner>(MockBehavior.Loose, task) {
                 CallBase = true
             };
@@ -31,7 +31,7 @@ namespace LocalAgent.Tests
             runner.Setup(i=>i.PathTo7Zip(It.IsAny<PipelineContext>()))
                 .Returns(@"C:\pathTo7Zip\7Zip.exe");
 
-            runner.Setup(i =>i.RunProcess(It.IsAny<ProcessStartInfo>(),null,null))
+            runner.Setup(i =>i.RunProcess(It.IsAny<ProcessStartInfo>(),null,null,It.IsAny<PipelineContext>()))
                 .Callback(callback)
                 .Returns(StatusTypes.InProgress)
                 .Verifiable();
@@ -65,7 +65,7 @@ namespace LocalAgent.Tests
             };
 
             ProcessStartInfo actualStartInfo = null;
-            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler> callback = (info,onData,onError) => 
+            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler, PipelineContext> callback = (info,onData,onError, _) => 
                 {
                     actualStartInfo = info;
                 };
@@ -79,7 +79,7 @@ namespace LocalAgent.Tests
             runner.Object.Run(context.Object, stage.Object, job.Object);
 
             // Assert
-            runner.Verify(i=>i.RunProcess(It.IsAny<ProcessStartInfo>(),null,null));
+            runner.Verify(i=>i.RunProcess(It.IsAny<ProcessStartInfo>(),null,null,It.IsAny<PipelineContext>()));
             var expected = BuildShell(rawCommand);
             Assert.Equal(expected.FileName, actualStartInfo.FileName);
             Assert.Equal(expected.Arguments, actualStartInfo.Arguments);

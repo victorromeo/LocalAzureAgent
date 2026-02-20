@@ -15,6 +15,7 @@ namespace LocalAgent
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         private PipelineOptions _pipelineOptions;
         private readonly List<string> _tempFiles = new();
+        private readonly Dictionary<string, object> _runtimeVariables = new(StringComparer.OrdinalIgnoreCase);
         public PipelineContext(PipelineOptions options)
             : this(new Variables.Variables().Load(options))
         { 
@@ -25,6 +26,7 @@ namespace LocalAgent
         {
             Variables = variables;
             Variables.ClearLookup();
+            Variables.RuntimeVariables = _runtimeVariables;
 
             var sourcePath = Variables.SourcePath.ToPath();
             var workFolderBase = Variables[VariableNames.AgentWorkFolder].ToPath();
@@ -203,6 +205,23 @@ namespace LocalAgent
             Logger.Info("Build Context pipeline loaded");
 
             return this;
+        }
+
+        public void SetVariable(string name, string value)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return;
+            }
+
+            _runtimeVariables[name] = value ?? string.Empty;
+            Variables.ClearLookup();
+        }
+
+        public void ClearRuntimeVariables()
+        {
+            _runtimeVariables.Clear();
+            Variables.ClearLookup();
         }
 
         internal virtual FileInfo GetYamlPath()

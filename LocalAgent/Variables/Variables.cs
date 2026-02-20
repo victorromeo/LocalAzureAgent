@@ -15,6 +15,7 @@ namespace LocalAgent.Variables
         IBuildVariables BuildVariables { get; set; }
         IEnvironmentVariables EnvironmentVariables { get; set; }
         ISystemVariables SystemVariables { get; set; }
+        IDictionary<string, object> RuntimeVariables { get; set; }
 
         string YamlPath { get; set; }
         string SourcePath { get; set; }
@@ -80,6 +81,7 @@ namespace LocalAgent.Variables
         public IBuildVariables BuildVariables { get; set; }
         public IEnvironmentVariables EnvironmentVariables { get; set; }
         public ISystemVariables SystemVariables { get; set; }
+        public IDictionary<string, object> RuntimeVariables { get; set; }
         public string YamlPath { get; set; }
         public string SourcePath { get; set; }
         public string WorkFolderBase { get; set; }
@@ -263,6 +265,14 @@ namespace LocalAgent.Variables
                 foreach (Variable v in stepVariables.OfType<Variable>())
                 {
                     lookup[v.Name] = v.Value;
+                }
+            }
+
+            if (RuntimeVariables != null)
+            {
+                foreach (var kvp in RuntimeVariables)
+                {
+                    lookup[kvp.Key] = kvp.Value;
                 }
             }
 

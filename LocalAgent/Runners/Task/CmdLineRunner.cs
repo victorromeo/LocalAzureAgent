@@ -85,10 +85,10 @@ namespace LocalAgent.Runners.Task
 
             GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
 
-            return RunCmdProcess(processInfo, FailOnStderr);
+            return RunCmdProcess(processInfo, FailOnStderr, context);
         }
 
-        protected virtual StatusTypes RunCmdProcess(ProcessStartInfo processInfo, bool failOnStderr)
+        protected virtual StatusTypes RunCmdProcess(ProcessStartInfo processInfo, bool failOnStderr, PipelineContext context)
         {
             Process process = null;
             StatusTypes status = StatusTypes.InProgress;
@@ -109,7 +109,11 @@ namespace LocalAgent.Runners.Task
                         return;
                     }
 
-                    if (HasError(e.Data))
+                    if (TryHandleSetVariable(e.Data, context, out var rendered))
+                    {
+                        GetLogger().Info(rendered);
+                    }
+                    else if (HasError(e.Data))
                     {
                         GetLogger().Error(e.Data);
                     }

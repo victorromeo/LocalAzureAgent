@@ -77,7 +77,7 @@ namespace LocalAgent.Runners.Task
             }
 
             GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
-            return RunProcess(processInfo);
+            return RunProcess(processInfo, null, null, context);
         }
 
         private string ResolveWorkingDirectory(PipelineContext context, IStageExpectation stage, IJobExpectation job)

@@ -136,7 +136,7 @@ namespace LocalAgent.Runners.Task
                     var processInfo = command.Compile(context, stage, job, StepTask);
                     GetLogger().Info($"COMMAND: {processInfo.FileName} {processInfo.Arguments}");
 
-                    status = RunProcess(processInfo);
+                    status = RunProcess(processInfo, null, null, context);
                 }
 
                 if (status == StatusTypes.InProgress)
@@ -154,7 +154,7 @@ namespace LocalAgent.Runners.Task
                     var processInfo = command.Compile(context, stage, job, StepTask);
                     GetLogger().Info($"COMMAND: {processInfo.FileName} {processInfo.Arguments}");
 
-                    status = RunProcess(processInfo);
+                    status = RunProcess(processInfo, null, null, context);
                 }
             }
 

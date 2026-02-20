@@ -123,7 +123,7 @@ namespace LocalAgent.Runners.Task
             
             var processStartInfo = command.Compile(context,stage,job,null);
 
-            return RunProcess(processStartInfo);
+            return RunProcess(processStartInfo, null, null, context);
         }
     }
 }

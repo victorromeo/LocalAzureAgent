@@ -93,7 +93,7 @@ namespace LocalAgent.Runners.Task
                     GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
                     
                     // Execute the command
-                    status = RunProcess(processInfo);
+                    status = RunProcess(processInfo, null, null, context);
                 }
             }
 

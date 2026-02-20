@@ -19,7 +19,7 @@ namespace LocalAgent.Tests
 
             public ProcessStartInfo LastStartInfo { get; private set; }
 
-            protected override StatusTypes RunCmdProcess(ProcessStartInfo processInfo, bool failOnStderr)
+            protected override StatusTypes RunCmdProcess(ProcessStartInfo processInfo, bool failOnStderr, PipelineContext context)
             {
                 LastStartInfo = processInfo;
                 return StatusTypes.InProgress;

@@ -46,7 +46,7 @@ namespace LocalAgent.Runners.Base
                 RedirectStandardError = true,
             };
 
-            return RunProcess(processInfo);
+            return RunProcess(processInfo, null, null, context);
         }
     }
 }

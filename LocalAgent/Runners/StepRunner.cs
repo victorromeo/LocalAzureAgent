@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.RegularExpressions;
 using LocalAgent.Models;
 using NLog;
@@ -41,9 +42,17 @@ namespace LocalAgent.Runners
             return pattern.IsMatch(message);
         }
 
-        public virtual StatusTypes RunProcess(ProcessStartInfo processInfo, 
-            DataReceivedEventHandler onData = null, 
+        public virtual StatusTypes RunProcess(ProcessStartInfo processInfo,
+            DataReceivedEventHandler onData = null,
             DataReceivedEventHandler onError = null)
+        {
+            return RunProcess(processInfo, onData, onError, null);
+        }
+
+        public virtual StatusTypes RunProcess(ProcessStartInfo processInfo,
+            DataReceivedEventHandler onData,
+            DataReceivedEventHandler onError,
+            PipelineContext context)
         {
             Process process = null;
             StatusTypes status = StatusTypes.InProgress;
@@ -59,7 +68,11 @@ namespace LocalAgent.Runners
                 process.OutputDataReceived += (sender, e) =>
                 {
                     if (e.Data != null) {
-                        if (HasError(e.Data)) {
+                        if (TryHandleSetVariable(e.Data, context, out var rendered))
+                        {
+                            Logger.Info(rendered);
+                        }
+                        else if (HasError(e.Data)) {
                             Logger.Error(e.Data);
                         } else if (HasWarning(e.Data)) {
                             Logger.Warn(e.Data);
@@ -105,6 +118,44 @@ namespace LocalAgent.Runners
             }
 
             return status;
+        }
+
+        protected static bool TryHandleSetVariable(string line, PipelineContext context, out string rendered)
+        {
+            rendered = line;
+            if (string.IsNullOrWhiteSpace(line) || context == null)
+            {
+                return false;
+            }
+
+            var match = Regex.Match(line, @"^##vso\[task\.setvariable\s+([^\]]+)\](.*)$");
+            if (!match.Success)
+            {
+                return false;
+            }
+
+            var metadata = match.Groups[1].Value;
+            var value = match.Groups[2].Value ?? string.Empty;
+            var attributes = metadata.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(part => part.Split('=', 2, StringSplitOptions.TrimEntries))
+                .Where(parts => parts.Length == 2)
+                .ToDictionary(parts => parts[0], parts => parts[1], StringComparer.OrdinalIgnoreCase);
+
+            if (!attributes.TryGetValue("variable", out var variableName) || string.IsNullOrWhiteSpace(variableName))
+            {
+                return false;
+            }
+
+            context.SetVariable(variableName, value);
+
+            var isSecret = attributes.TryGetValue("isSecret", out var secretValue)
+                && string.Equals(secretValue, "true", StringComparison.OrdinalIgnoreCase);
+
+            rendered = isSecret
+                ? $"##vso[task.setvariable variable={variableName};isSecret=true]********"
+                : line;
+
+            return true;
         }
     }
 }

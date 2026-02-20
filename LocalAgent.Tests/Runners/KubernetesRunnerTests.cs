@@ -20,14 +20,14 @@ namespace LocalAgent.Tests
                 : ("/bin/bash", $"-c \"{command}\"");
         }
 
-        private static Mock<KubernetesRunner> BuildRunner(StepTask task, Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler> callback)
+        private static Mock<KubernetesRunner> BuildRunner(StepTask task, Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler, PipelineContext> callback)
         {
             var runner = new Mock<KubernetesRunner>(MockBehavior.Loose, task) { CallBase = true };
 
             runner.Setup(i => i.GetLogger())
                 .Returns(new NullLogger(new LogFactory()));
 
-            runner.Setup(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null))
+            runner.Setup(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null, It.IsAny<PipelineContext>()))
                 .Callback(callback)
                 .Returns(StatusTypes.InProgress)
                 .Verifiable();
@@ -50,7 +50,7 @@ namespace LocalAgent.Tests
             };
 
             ProcessStartInfo actualStartInfo = null;
-            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler> callback = (info, _, __) =>
+            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler, PipelineContext> callback = (info, _, __, ___) =>
             {
                 actualStartInfo = info;
             };
@@ -67,7 +67,7 @@ namespace LocalAgent.Tests
 
             runner.Object.Run(context, new Mock<IStageExpectation>().Object, new Mock<IJobExpectation>().Object);
 
-            runner.Verify(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null));
+            runner.Verify(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null, It.IsAny<PipelineContext>()));
             var expected = BuildShell("kubectl --context local --namespace dev apply -f k8s/deploy.yml -f k8s/svc.yml");
             Assert.Equal(expected.FileName, actualStartInfo.FileName);
             Assert.Equal(expected.Arguments, actualStartInfo.Arguments);
@@ -86,7 +86,7 @@ namespace LocalAgent.Tests
             };
 
             ProcessStartInfo actualStartInfo = null;
-            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler> callback = (info, _, __) =>
+            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler, PipelineContext> callback = (info, _, __, ___) =>
             {
                 actualStartInfo = info;
             };
@@ -103,7 +103,7 @@ namespace LocalAgent.Tests
 
             runner.Object.Run(context, new Mock<IStageExpectation>().Object, new Mock<IJobExpectation>().Object);
 
-            runner.Verify(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null));
+            runner.Verify(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null, It.IsAny<PipelineContext>()));
             var expected = BuildShell("kubectl get pods -o wide");
             Assert.Equal(expected.FileName, actualStartInfo.FileName);
             Assert.Equal(expected.Arguments, actualStartInfo.Arguments);

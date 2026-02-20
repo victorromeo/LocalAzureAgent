@@ -18,7 +18,7 @@ namespace LocalAgent.Tests
                 ? ("cmd.exe", $"/C \"{command}\"")
                 : ("/bin/bash", $"-c \"{command}\"");
         }
-        public Mock<VSTestRunner> BuildRunner(StepTask task, Action<ProcessStartInfo,DataReceivedEventHandler,DataReceivedEventHandler> callback) {
+        public Mock<VSTestRunner> BuildRunner(StepTask task, Action<ProcessStartInfo,DataReceivedEventHandler,DataReceivedEventHandler,PipelineContext> callback) {
             var runner = new Mock<VSTestRunner>(MockBehavior.Loose, task) {
                 CallBase = true
             };
@@ -34,7 +34,7 @@ namespace LocalAgent.Tests
                     "testABC.dll", "testDEF.dll"
                 });
 
-            runner.Setup(i =>i.RunProcess(It.IsAny<ProcessStartInfo>(),null,null))
+            runner.Setup(i =>i.RunProcess(It.IsAny<ProcessStartInfo>(),null,null,It.IsAny<PipelineContext>()))
                 .Callback(callback)
                 .Returns(StatusTypes.InProgress)
                 .Verifiable();
@@ -49,8 +49,8 @@ namespace LocalAgent.Tests
             // Arrange
             ProcessStartInfo actualStartInfo = null;
 
-            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler> callback 
-                = (info,onData,onError) => 
+            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler, PipelineContext> callback 
+                = (info,onData,onError, _) => 
                 {
                     actualStartInfo = info;
                 };
@@ -79,7 +79,7 @@ namespace LocalAgent.Tests
             runner.Object.Run(context.Object,stage.Object,job.Object);
 
             // Assert
-            runner.Verify(i=>i.RunProcess(It.IsAny<ProcessStartInfo>(), null,null));
+            runner.Verify(i=>i.RunProcess(It.IsAny<ProcessStartInfo>(), null,null,It.IsAny<PipelineContext>()));
             
             var expected = BuildShell(rawCommand);
             Assert.Equal(expected.FileName, actualStartInfo.FileName);
@@ -92,8 +92,8 @@ namespace LocalAgent.Tests
             // Arrange
             ProcessStartInfo actualStartInfo = null;
 
-            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler> callback
-                = (info, onData, onError) =>
+            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler, PipelineContext> callback
+                = (info, onData, onError, _) =>
                 {
                     actualStartInfo = info;
                 };
@@ -129,7 +129,7 @@ namespace LocalAgent.Tests
             runner.Object.Run(context.Object, stage.Object, job.Object);
 
             // Assert
-            runner.Verify(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null));
+            runner.Verify(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null, It.IsAny<PipelineContext>()));
 
             var expected = BuildShell(
                 "C:\\pathToVsTest\\vstest.console.exe testABC.dll testDEF.dll /Tests:MyTest /TestCaseFilter:\"Category=Unit\" /TestAdapterPath:customAdapters /Settings:settings.runsettings /Parallel /InIsolation");

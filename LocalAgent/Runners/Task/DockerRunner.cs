@@ -101,7 +101,7 @@ namespace LocalAgent.Runners.Task
 
             var processInfo = command.Compile(context, stage, job, StepTask);
             GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
-            return RunProcess(processInfo);
+            return RunProcess(processInfo, null, null, context);
         }
 
         private StatusTypes RunPush(PipelineContext context, IStageExpectation stage, IJobExpectation job)
@@ -128,7 +128,7 @@ namespace LocalAgent.Runners.Task
 
                 var processInfo = command.Compile(context, stage, job, StepTask);
                 GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
-                status = RunProcess(processInfo);
+                status = RunProcess(processInfo, null, null, context);
                 if (!PipelineAgent.CanContinue(status))
                 {
                     break;
@@ -171,7 +171,7 @@ namespace LocalAgent.Runners.Task
 
             var processInfo = command.Compile(context, stage, job, StepTask);
             GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
-            return RunProcess(processInfo);
+            return RunProcess(processInfo, null, null, context);
         }
 
         private StatusTypes RunLogout(PipelineContext context, IStageExpectation stage, IJobExpectation job)
@@ -184,7 +184,7 @@ namespace LocalAgent.Runners.Task
 
             var processInfo = command.Compile(context, stage, job, StepTask);
             GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
-            return RunProcess(processInfo);
+            return RunProcess(processInfo, null, null, context);
         }
 
         private StatusTypes RunRun(PipelineContext context, IStageExpectation stage, IJobExpectation job)
@@ -210,7 +210,7 @@ namespace LocalAgent.Runners.Task
 
             var processInfo = command.Compile(context, stage, job, StepTask);
             GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
-            return RunProcess(processInfo);
+            return RunProcess(processInfo, null, null, context);
         }
 
         private StatusTypes Unsupported(string command)
