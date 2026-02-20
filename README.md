@@ -36,6 +36,7 @@ The built utility is suitable for one hit compilation as a command line utility,
   - DotnetCli
   - Docker
   - ExtractFiles
+  - Kubernetes
   - MSBuild
   - NodeTool
   - NuGetCommand

@@ -22,6 +22,7 @@ namespace LocalAgent.Runners
             {DotnetCliRunner.Task, typeof(DotnetCliRunner)},
             {DockerRunner.Task, typeof(DockerRunner)},
             {ExtractFilesRunner.Task, typeof(ExtractFilesRunner)},
+            {KubernetesRunner.Task, typeof(KubernetesRunner)},
             {MSBuildRunner.Task, typeof(MSBuildRunner)},
             {NodeToolRunner.Task, typeof(NodeToolRunner)},
             {PowershellRunner.Task,typeof(PowershellRunner)},
