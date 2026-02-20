@@ -58,6 +58,44 @@ variables:
         }
 
         [Fact]
+        public void Deserialize_Multiline_VariablesScalarOnly()
+        {
+            var test = @"
+variables:
+- solution : |
+    abc.sln
+    def.sln
+- buildPlatform : 'Any CPU'
+";
+
+            var actual = PipelineContext.Deserialize(test);
+            Assert.Equal(2, actual.Variables.Count);
+
+            ((Variable) actual.Variables[0]).Name.Should().Be("solution");
+            ((Variable) actual.Variables[0]).Value.Should().Be("abc.sln\ndef.sln");
+            ((Variable) actual.Variables[1]).Name.Should().Be("buildPlatform");
+            ((Variable) actual.Variables[1]).Value.Should().Be("Any CPU");
+        }
+
+          [Fact]
+          public void Deserialize_VariablesMapScalarOnly()
+          {
+            var test = @"
+      variables:
+        solution: '**/*.sln'
+        buildPlatform: 'Any CPU'
+      ";
+
+            var actual = PipelineContext.Deserialize(test);
+            Assert.Equal(2, actual.Variables.Count);
+
+            ((Variable) actual.Variables[0]).Name.Should().Be("solution");
+            ((Variable) actual.Variables[0]).Value.Should().Be("**/*.sln");
+            ((Variable) actual.Variables[1]).Name.Should().Be("buildPlatform");
+            ((Variable) actual.Variables[1]).Value.Should().Be("Any CPU");
+          }
+
+        [Fact]
         public void Deserialize_CommentsAndStages()
         {
             var test = @"

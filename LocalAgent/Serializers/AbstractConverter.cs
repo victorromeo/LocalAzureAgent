@@ -43,6 +43,9 @@ namespace LocalAgent.Serializers
             var builder = new DeserializerBuilder()
                 .WithNamingConvention(_namingConvention)
                 .WithNodeDeserializer(
+                    inner => new VariableMapNodeDeserializer(inner),
+                    s => s.InsteadOf<CollectionNodeDeserializer>())
+                .WithNodeDeserializer(
                     inner => new AbstractNodeNodeTypeResolver(inner,_resolvers.ToArray()),
                     s => s.InsteadOf<ObjectNodeDeserializer>())
                 .WithNodeTypeResolver(new OtherTagResolver())

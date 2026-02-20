@@ -62,10 +62,17 @@ namespace LocalAgent.Models
         {
             T instance = Activator.CreateInstance<T>();
 
+            if (parser.Current is MappingStart)
+            {
+                parser.MoveNext();
+            }
+
+            var keyScalar = parser.Current as Scalar;
+            var key = keyScalar?.Value;
             parser.MoveNext();
-            var key = (parser.Current as Scalar).Value;
-            parser.MoveNext();
-            var value = (parser.Current as Scalar).Value;
+
+            var valueScalar = parser.Current as Scalar;
+            var value = ReadScalarValue(valueScalar);
             parser.MoveNext();
             
             if (instance is Variable) {
@@ -85,6 +92,21 @@ namespace LocalAgent.Models
         public object Deserialize(IParser parser, Type type)
         {
             throw new NotImplementedException();
+        }
+
+        private static string ReadScalarValue(Scalar scalar)
+        {
+            if (scalar == null)
+            {
+                return null;
+            }
+
+            if (scalar.Style == ScalarStyle.Literal || scalar.Style == ScalarStyle.Folded)
+            {
+                return scalar.Value?.TrimEnd('\r', '\n');
+            }
+
+            return scalar.Value;
         }
     }
 
