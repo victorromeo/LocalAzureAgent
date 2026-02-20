@@ -20,6 +20,7 @@ namespace LocalAgent.Runners
             {CmdLineRunner.Task, typeof(CmdLineRunner)},
             {CopyFilesRunner.Task, typeof(CopyFilesRunner)},
             {DotnetCliRunner.Task, typeof(DotnetCliRunner)},
+            {DockerRunner.Task, typeof(DockerRunner)},
             {ExtractFilesRunner.Task, typeof(ExtractFilesRunner)},
             {MSBuildRunner.Task, typeof(MSBuildRunner)},
             {PowershellRunner.Task,typeof(PowershellRunner)},

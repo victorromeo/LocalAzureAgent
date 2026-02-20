@@ -34,6 +34,7 @@ The built utility is suitable for one hit compilation as a command line utility,
   - CmdLine
   - CopyFiles
   - DotnetCli
+  - Docker
   - ExtractFiles
   - MSBuild
   - NuGetCommand
