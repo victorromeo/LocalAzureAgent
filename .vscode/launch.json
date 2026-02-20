@@ -96,6 +96,20 @@
       "env": {
         "TeamProject": "TP"
       }
+    },
+    {
+      "name": "Run LocalAgent.Service",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/LocalAgent.Service/LocalAgent.Service.csproj"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
     }
   ]
 }
