@@ -42,6 +42,7 @@ The built utility is suitable for one hit compilation as a command line utility,
   - PublishBuildArtifacts
   - ReplaceTokens
   - UpdateAssemblyInfo
+  - UseDotNet
   - VSTest
 
 ## Build
