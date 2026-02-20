@@ -72,6 +72,30 @@
       "env": {
         "TeamProject": "TP"
       }
+    },
+    {
+      "name": "Run MsUnitTests1 Pipeline",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/LocalAgent/LocalAgent.csproj",
+        "--",
+        "MsUnitTests1",
+        "pipeline.yml",
+        "--work",
+        "work",
+        "--id",
+        "4"
+      ],
+      "cwd": "${workspaceFolder}/Samples",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "env": {
+        "TeamProject": "TP"
+      }
     }
   ]
 }
