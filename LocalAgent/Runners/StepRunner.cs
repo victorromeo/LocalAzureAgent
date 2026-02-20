@@ -73,11 +73,11 @@ namespace LocalAgent.Runners
                             Logger.Info(rendered);
                         }
                         else if (HasError(e.Data)) {
-                            Logger.Error(e.Data);
+                            Logger.Error(MaskSecrets(e.Data, context));
                         } else if (HasWarning(e.Data)) {
-                            Logger.Warn(e.Data);
+                            Logger.Warn(MaskSecrets(e.Data, context));
                         } else {
-                            Logger.Info(e.Data);
+                            Logger.Info(MaskSecrets(e.Data, context));
                         }
                     }
                    
@@ -88,7 +88,7 @@ namespace LocalAgent.Runners
                 {
                     if (e.Data != null)
                     {
-                        Logger.Error(e.Data ?? string.Empty);
+                        Logger.Error(MaskSecrets(e.Data ?? string.Empty, context));
                         status = StatusTypes.Error;
                     }
                 };
@@ -151,11 +151,22 @@ namespace LocalAgent.Runners
             var isSecret = attributes.TryGetValue("isSecret", out var secretValue)
                 && string.Equals(secretValue, "true", StringComparison.OrdinalIgnoreCase);
 
-            rendered = isSecret
-                ? $"##vso[task.setvariable variable={variableName};isSecret=true]********"
-                : line;
+            if (isSecret)
+            {
+                context.AddSecret(value);
+                rendered = $"##vso[task.setvariable variable={variableName};isSecret=true]********";
+            }
+            else
+            {
+                rendered = line;
+            }
 
             return true;
+        }
+
+        private static string MaskSecrets(string message, PipelineContext context)
+        {
+            return context == null ? message : context.MaskSecrets(message);
         }
     }
 }

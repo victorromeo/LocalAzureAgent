@@ -16,6 +16,7 @@ namespace LocalAgent
         private PipelineOptions _pipelineOptions;
         private readonly List<string> _tempFiles = new();
         private readonly Dictionary<string, object> _runtimeVariables = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _secretValues = new(StringComparer.Ordinal);
         public PipelineContext(PipelineOptions options)
             : this(new Variables.Variables().Load(options))
         { 
@@ -216,6 +217,37 @@ namespace LocalAgent
 
             _runtimeVariables[name] = value ?? string.Empty;
             Variables.ClearLookup();
+        }
+
+        public void AddSecret(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return;
+            }
+
+            _secretValues.Add(value);
+        }
+
+        public string MaskSecrets(string message)
+        {
+            if (string.IsNullOrEmpty(message) || _secretValues.Count == 0)
+            {
+                return message;
+            }
+
+            var masked = message;
+            foreach (var secret in _secretValues.OrderByDescending(s => s.Length))
+            {
+                if (string.IsNullOrEmpty(secret))
+                {
+                    continue;
+                }
+
+                masked = masked.Replace(secret, "********", StringComparison.Ordinal);
+            }
+
+            return masked;
         }
 
         public void ClearRuntimeVariables()

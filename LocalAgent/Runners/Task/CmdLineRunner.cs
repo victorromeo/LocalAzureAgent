@@ -115,15 +115,15 @@ namespace LocalAgent.Runners.Task
                     }
                     else if (HasError(e.Data))
                     {
-                        GetLogger().Error(e.Data);
+                        GetLogger().Error(MaskSecrets(e.Data, context));
                     }
                     else if (HasWarning(e.Data))
                     {
-                        GetLogger().Warn(e.Data);
+                        GetLogger().Warn(MaskSecrets(e.Data, context));
                     }
                     else
                     {
-                        GetLogger().Info(e.Data);
+                        GetLogger().Info(MaskSecrets(e.Data, context));
                     }
                 };
 
@@ -137,12 +137,12 @@ namespace LocalAgent.Runners.Task
 
                     if (failOnStderr)
                     {
-                        GetLogger().Error(e.Data);
+                        GetLogger().Error(MaskSecrets(e.Data, context));
                         status = StatusTypes.Error;
                     }
                     else
                     {
-                        GetLogger().Warn(e.Data);
+                        GetLogger().Warn(MaskSecrets(e.Data, context));
                     }
                 };
 
@@ -175,6 +175,11 @@ namespace LocalAgent.Runners.Task
             }
 
             return status;
+        }
+
+        private static string MaskSecrets(string message, PipelineContext context)
+        {
+            return context == null ? message : context.MaskSecrets(message);
         }
     }
 }
