@@ -1,88 +1,101 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
 using LocalAgent.Models;
 using LocalAgent.Runners.Task;
-using LocalAgent.Variables;
-using System.Runtime.InteropServices;
-using Moq;
-using NLog;
 using Xunit;
 
 namespace LocalAgent.Tests
 {
     public class ArchiveFilesRunnerTests {
 
-        private static (string FileName, string Arguments) BuildShell(string command)
-        {
-            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? ("cmd.exe", $"/C \"{command}\"")
-                : ("/bin/bash", $"-c \"{command}\"");
-        }
-
-        public Mock<ArchiveFilesRunner> BuildRunner(StepTask task, Action<ProcessStartInfo,DataReceivedEventHandler,DataReceivedEventHandler,PipelineContext> callback) {
-            var runner = new Mock<ArchiveFilesRunner>(MockBehavior.Loose, task) {
-                CallBase = true
-            };
-
-            runner.Setup(i => i.GetLogger())
-                .Returns(new NullLogger(new LogFactory()));
-
-            runner.Setup(i=>i.PathTo7Zip(It.IsAny<PipelineContext>()))
-                .Returns(@"C:\pathTo7Zip\7Zip.exe");
-
-            runner.Setup(i =>i.RunProcess(It.IsAny<ProcessStartInfo>(),null,null,It.IsAny<PipelineContext>()))
-                .Callback(callback)
-                .Returns(StatusTypes.InProgress)
-                .Verifiable();
-
-            return runner;
-        }
-
         [Theory]
-        [InlineData("true","true","true","false","C:\\pathTo7Zip\\7Zip.exe a someArchiveFile -bb3 -aoa -tsomeArchiveType someRoot")]
-        [InlineData("false","false","false","true","C:\\pathTo7Zip\\7Zip.exe a someArchiveFile -bb0 -tsomeArchiveType someRoot/*")]
-        public void RunTests(string includeRootFolder, string replaceExistingArchive, string verbose, string quiet, string rawCommand) {
-            // Arrange
-            var task = new StepTask()
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Run_CreatesZipArchive(bool includeRootFolder) {
+            var baseDir = Path.Combine(Path.GetTempPath(), "LocalAgentTests", Guid.NewGuid().ToString("N"));
+            var rootDir = Path.Combine(baseDir, "root");
+            var workDir = Path.Combine(baseDir, "work");
+            var archiveFile = Path.Combine(baseDir, "out", "archive.zip");
+
+            Directory.CreateDirectory(rootDir);
+            Directory.CreateDirectory(workDir);
+            File.WriteAllText(Path.Combine(rootDir, "sample.txt"), "test");
+
+            var task = new StepTask
             {
-                Inputs = new Dictionary<string, string>()
+                Inputs = new Dictionary<string, string>
                 {
-                    {"rootFolderOrFile", "someRoot"},
-                    {"includeRootFolder", includeRootFolder},
-                    {"archiveType", "someArchiveType"},
-                    {"archiveFile", "someArchiveFile"},
-                    {"replaceExistingArchive", replaceExistingArchive},
-                    {"verbose", verbose},
-                    {"quiet", quiet}
+                    {"rootFolderOrFile", rootDir},
+                    {"includeRootFolder", includeRootFolder.ToString().ToLowerInvariant()},
+                    {"archiveType", "zip"},
+                    {"archiveFile", archiveFile},
+                    {"replaceExistingArchive", "true"},
+                    {"verbose", "false"},
+                    {"quiet", "false"}
                 }
             };
 
-            var options = new PipelineOptions() {
-                AgentWorkFolder = "work",
-                SourcePath = "C:\\SomeAgentPath",
-                YamlPath = "SomePipeline.yaml"
+            var options = new PipelineOptions
+            {
+                AgentWorkFolder = workDir,
+                SourcePath = rootDir,
+                YamlPath = "pipeline.yml",
+                BuildInplace = true
             };
 
-            ProcessStartInfo actualStartInfo = null;
-            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler, PipelineContext> callback = (info,onData,onError, _) => 
-                {
-                    actualStartInfo = info;
-                };
+            var runner = new ArchiveFilesRunner(task);
+            var context = new PipelineContext(options);
 
-            var runner = BuildRunner(task, callback);
-            var context = new Mock<PipelineContext>(options);
-            var stage = new Mock<IStageExpectation>();
-            var job = new Mock<IJobExpectation>();
+            var status = runner.Run(context, null, null);
 
-            // Act
-            runner.Object.Run(context.Object, stage.Object, job.Object);
+            Assert.Equal(StatusTypes.Complete, status);
+            Assert.True(File.Exists(archiveFile));
 
-            // Assert
-            runner.Verify(i=>i.RunProcess(It.IsAny<ProcessStartInfo>(),null,null,It.IsAny<PipelineContext>()));
-            var expected = BuildShell(rawCommand);
-            Assert.Equal(expected.FileName, actualStartInfo.FileName);
-            Assert.Equal(expected.Arguments, actualStartInfo.Arguments);
+            using var archive = ZipFile.OpenRead(archiveFile);
+            Assert.Contains(archive.Entries, entry => entry.FullName.EndsWith("sample.txt", StringComparison.OrdinalIgnoreCase));
         }
+
+        [Fact]
+        public void Run_ReturnsWarning_ForUnsupportedArchiveType() {
+            var baseDir = Path.Combine(Path.GetTempPath(), "LocalAgentTests", Guid.NewGuid().ToString("N"));
+            var rootDir = Path.Combine(baseDir, "root");
+            var workDir = Path.Combine(baseDir, "work");
+            var archiveFile = Path.Combine(baseDir, "out", "archive.7z");
+
+            Directory.CreateDirectory(rootDir);
+            Directory.CreateDirectory(workDir);
+            File.WriteAllText(Path.Combine(rootDir, "sample.txt"), "test");
+
+            var task = new StepTask
+            {
+                Inputs = new Dictionary<string, string>
+                {
+                    {"rootFolderOrFile", rootDir},
+                    {"includeRootFolder", "false"},
+                    {"archiveType", "7z"},
+                    {"archiveFile", archiveFile},
+                    {"replaceExistingArchive", "true"}
+                }
+            };
+
+            var options = new PipelineOptions
+            {
+                AgentWorkFolder = workDir,
+                SourcePath = rootDir,
+                YamlPath = "pipeline.yml",
+                BuildInplace = true
+            };
+
+            var runner = new ArchiveFilesRunner(task);
+            var context = new PipelineContext(options);
+
+            var status = runner.Run(context, null, null);
+
+            Assert.Equal(StatusTypes.Warning, status);
+            Assert.False(File.Exists(archiveFile));
+        }
+
     }
 }

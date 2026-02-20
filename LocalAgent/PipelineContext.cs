@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using LocalAgent.Models;
 using LocalAgent.Serializers;
 using LocalAgent.Utilities;
@@ -277,33 +279,98 @@ namespace LocalAgent
 
         internal virtual FileInfo GetYamlPath()
         {
+            var yamlPath = Variables.YamlPath.ToPath();
             try
             {
-                if (File.Exists(Variables.YamlPath))
+                if (File.Exists(yamlPath))
                 {
-                    Logger.Info($"Yaml Path: {Variables.YamlPath}");
-                    return new FileInfo(Variables.YamlPath);
+                    Logger.Info($"Yaml Path: {yamlPath}");
+                    return new FileInfo(yamlPath);
                 }
             }
             catch
             {
-                Logger.Info($"Searching for Yaml Path: {Variables.YamlPath}");
+                Logger.Info($"Searching for Yaml Path: {yamlPath}");
+            }
+
+            if (ContainsGlob(yamlPath))
+            {
+                var globMatch = ResolveYamlGlob(yamlPath);
+                if (globMatch != null)
+                {
+                    return globMatch;
+                }
             }
 
             List<string> searchPaths = new()
             {
-                $"{Variables[VariableNames.BuildSourcesDirectory]}/{Variables.YamlPath}".ToPath(),
-                $"{Variables.SourcePath}/{Variables.YamlPath}".ToPath()
+                $"{Variables[VariableNames.BuildSourcesDirectory]}/{yamlPath}".ToPath(),
+                $"{Variables.SourcePath}/{yamlPath}".ToPath()
             };
 
             var validPath = searchPaths
                 .Select(i => new FileInfo(i))
-                .FirstOrDefault(i => new FileUtils().CheckFileExtension(i,".yml"));
+                .FirstOrDefault(IsYamlFile);
 
             if (validPath == null)
-                throw new Exception($"Yaml file '{Variables.YamlPath.ToPath()}' not found");
+                throw new Exception($"Yaml file '{yamlPath}' not found");
 
             return validPath;
+        }
+
+        private static bool ContainsGlob(string path)
+        {
+            return path.IndexOfAny(new[] { '*', '?', '[', ']' }) >= 0;
+        }
+
+        private FileInfo ResolveYamlGlob(string yamlPath)
+        {
+            IEnumerable<string> matches;
+
+            if (Path.IsPathRooted(yamlPath))
+            {
+                var root = Path.GetPathRoot(yamlPath) ?? Path.DirectorySeparatorChar.ToString();
+                var relative = yamlPath.Substring(root.Length)
+                    .TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                matches = ExecuteGlob(root, relative);
+            }
+            else
+            {
+                var bases = new[]
+                {
+                    Variables[VariableNames.BuildSourcesDirectory].ToPath(),
+                    Variables.SourcePath.ToPath()
+                };
+
+                matches = bases
+                    .Where(dir => !string.IsNullOrWhiteSpace(dir))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .SelectMany(dir => ExecuteGlob(dir, yamlPath));
+            }
+
+            return matches
+                .Select(path => new FileInfo(path))
+                .FirstOrDefault(IsYamlFile);
+        }
+
+        private static IEnumerable<string> ExecuteGlob(string baseDir, string pattern)
+        {
+            if (string.IsNullOrWhiteSpace(baseDir) || !Directory.Exists(baseDir))
+            {
+                return Array.Empty<string>();
+            }
+
+            var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+            matcher.AddInclude(pattern.Replace('\\', '/'));
+            var result = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(baseDir)));
+            return result.Files.Select(f => Path.Combine(baseDir, f.Path));
+        }
+
+        private static bool IsYamlFile(FileInfo fileInfo)
+        {
+            return fileInfo.Exists
+                && (fileInfo.Extension.Equals(".yml", StringComparison.OrdinalIgnoreCase)
+                    || fileInfo.Extension.Equals(".yaml", StringComparison.OrdinalIgnoreCase));
         }
 
         public IVariables Variables { get; }
