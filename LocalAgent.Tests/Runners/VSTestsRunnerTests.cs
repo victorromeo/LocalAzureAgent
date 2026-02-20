@@ -77,5 +77,56 @@ namespace LocalAgent.Tests
             Assert.Equal("cmd.exe", actualStartInfo.FileName);
             Assert.Equal(expected, actualStartInfo.Arguments);
         }
+
+        [Fact]
+        public void Run_WithOptionalArguments()
+        {
+            // Arrange
+            ProcessStartInfo actualStartInfo = null;
+
+            Action<ProcessStartInfo, DataReceivedEventHandler, DataReceivedEventHandler> callback
+                = (info, onData, onError) =>
+                {
+                    actualStartInfo = info;
+                };
+
+            var options = new PipelineOptions()
+            {
+                AgentWorkFolder = "work",
+                SourcePath = "C:\\SomeAgentPath",
+                YamlPath = "SomePipeline.yaml"
+            };
+
+            var task = new StepTask()
+            {
+                Inputs = new Dictionary<string, string>()
+                {
+                    {"testFilterCriteria" , "Category=Unit"},
+                    {"testSelector" , "MyTest"},
+                    {"runSettingsFile" , "settings.runsettings"},
+                    {"pathtoCustomTestAdapters" , "customAdapters"},
+                    {"runInParallel" , "true"},
+                    {"runTestsInIsolation" , "true"},
+                    {"searchFolder", "searchPath"},
+                    {"testAssemblyVer2","abc.dll\ndef.dll"}
+                }
+            };
+
+            var runner = BuildRunner(task, callback);
+            var context = new Mock<PipelineContext>(options);
+            var stage = new Mock<IStageExpectation>();
+            var job = new Mock<IJobExpectation>();
+
+            // Act
+            runner.Object.Run(context.Object, stage.Object, job.Object);
+
+            // Assert
+            runner.Verify(i => i.RunProcess(It.IsAny<ProcessStartInfo>(), null, null));
+
+            Assert.Equal("cmd.exe", actualStartInfo.FileName);
+            Assert.Equal(
+                "/C \"C:\\pathToVsTest\\vstest.console.exe testABC.dll testDEF.dll /Tests:MyTest /TestCaseFilter:\"Category=Unit\" /TestAdapterPath:customAdapters /Settings:settings.runsettings /Parallel /InIsolation\"",
+                actualStartInfo.Arguments);
+        }
     }
 }

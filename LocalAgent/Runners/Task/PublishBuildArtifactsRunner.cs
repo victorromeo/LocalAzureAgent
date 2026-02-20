@@ -15,8 +15,6 @@ namespace LocalAgent.Runners.Task
         public static string Task = "PublishBuildArtifacts@1";
         protected override ILogger Logger => LogManager.GetCurrentClassLogger();
 
-        private readonly StepTask _step;
-
         public PublishBuildArtifactsRunner(StepTask step)
             :base(step)
         {

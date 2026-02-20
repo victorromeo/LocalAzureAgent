@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using LocalAgent.Models;
 using NLog;
-using System.Net;
+using System.Net.Http;
 using LocalAgent.Variables;
 using LocalAgent.Utilities;
 using System;
@@ -39,10 +39,10 @@ namespace LocalAgent.Runners.Task
                 var installPath = context.Variables[VariableNames.AgentHomeDirectory];
                 var nugetPath = $"{installPath}/nuget.exe".ToPath();
 
-                WebClient wc = new WebClient();
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                using var httpClient = new HttpClient();
                 status = StatusTypes.InProgress;
-                wc.DownloadFile(downloadUrl, nugetPath);
+                var payload = httpClient.GetByteArrayAsync(downloadUrl).GetAwaiter().GetResult();
+                File.WriteAllBytes(nugetPath, payload);
 
             } catch (Exception ex) {
                 GetLogger().Error(ex, "Failed to install NuGet");
