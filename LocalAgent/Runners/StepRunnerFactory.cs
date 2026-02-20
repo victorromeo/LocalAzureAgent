@@ -24,6 +24,7 @@ namespace LocalAgent.Runners
             {MSBuildRunner.Task, typeof(MSBuildRunner)},
             {PowershellRunner.Task,typeof(PowershellRunner)},
             {PublishBuildArtifactsRunner.Task, typeof(PublishBuildArtifactsRunner)},
+            {UpdateAssemblyInfoRunner.Task, typeof(UpdateAssemblyInfoRunner)},
             {VSTestRunner.Task, typeof(VSTestRunner)},
             {NuGetCommandRunner.Task, typeof(NuGetCommandRunner)},
             {NuGetToolInstaller.Task, typeof(NuGetToolInstaller)}
