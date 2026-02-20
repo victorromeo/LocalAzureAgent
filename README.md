@@ -30,13 +30,18 @@ The built utility is suitable for one hit compilation as a command line utility,
   - Workspace
 - Task runners
   - ArchiveFiles
-  - Batch 
+  - BatchScript
+  - CmdLine
   - CopyFiles
   - DotnetCli
   - ExtractFiles
   - MSBuild
+  - NuGetCommand
+  - NuGetToolInstaller
   - Powershell
-  - PublishBuildArtefacts
+  - PublishBuildArtifacts
+  - ReplaceTokens
+  - UpdateAssemblyInfo
   - VSTest
 
 ## Build
@@ -100,19 +105,19 @@ LocalAgent.exe <source> <yaml> <options>
 
 ```cmd
 cd Samples
-..\LocalAgent\bin\Debug\net5.0\LocalAgent.exe ConsoleApp1 pipeline.yml --work "work"  --id 1
+..\LocalAgent\bin\Debug\net9.0\LocalAgent.exe ConsoleApp1 pipeline.yml --work "work"  --id 1
 ```
 
 ### Web Application
 
 ```cmd
 cd Samples
-..\LocalAgent\bin\Debug\net5.0\LocalAgent.exe WebApplication1 pipeline.yml --work "work"  --id 2
+..\LocalAgent\bin\Debug\net9.0\LocalAgent.exe WebApplication1 pipeline.yml --work "work"  --id 2
 ```
 
 ### Windows Form Application
 
 ```cmd
 cd Samples
-..\LocalAgent\bin\Debug\net5.0\LocalAgent.exe WindowsFormsApp1 pipeline.yml --work "work" --id 3
+..\LocalAgent\bin\Debug\net9.0\LocalAgent.exe WindowsFormsApp1 pipeline.yml --work "work" --id 3
 ```
