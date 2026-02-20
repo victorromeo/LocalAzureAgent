@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using LocalAgent.Models;
 using LocalAgent.Runners;
 
@@ -37,6 +38,7 @@ namespace LocalAgent
                 context = new PipelineContext(_o).Prepare().LoadPipeline();
                 if (context != null)
                 {
+                    LogEvaluatedVariables(context, null, null);
                     Logger.Info($"Pipeline\n{context.Serialize()}");
                     RunPipeline(context);
                 }
@@ -207,6 +209,38 @@ namespace LocalAgent
                     Logger.Info($"STEP: {stepName}succeeded");
                     break;
             } 
+        }
+
+        private static void LogEvaluatedVariables(
+            PipelineContext context,
+            IStageExpectation stage,
+            IJobExpectation job)
+        {
+            var variables = context.Variables.BuildLookup(
+                context.Pipeline?.Variables,
+                stage?.Variables,
+                job?.Variables,
+                null);
+
+            Logger.Info("Variables (evaluated):");
+
+            foreach (var key in variables.Keys.OrderBy(k => k, StringComparer.OrdinalIgnoreCase))
+            {
+                var value = variables[key];
+                var rendered = value switch
+                {
+                    string s => context.Variables.Eval(
+                        s,
+                        context.Pipeline?.Variables,
+                        stage?.Variables,
+                        job?.Variables,
+                        null),
+                    null => string.Empty,
+                    _ => value.ToString()
+                };
+
+                Logger.Info($"  {key} = {rendered}");
+            }
         }
 
         private static IList<IStepExpectation> GetSteps(IJobExpectation job)
