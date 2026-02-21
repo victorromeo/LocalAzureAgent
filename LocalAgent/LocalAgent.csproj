@@ -16,4 +16,13 @@
     <PackageReference Include="YamlDotNet" Version="11.2.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Tools/ToolManifest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Tools/horusec-config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

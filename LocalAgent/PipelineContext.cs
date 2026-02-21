@@ -102,6 +102,7 @@ namespace LocalAgent
             var toolsDirectory = Variables[VariableNames.AgentToolsDirectory].ToPath();
             var cacheDirectory = Variables[VariableNames.AgentCacheDirectory].ToPath();
             var logsDirectory = Variables[VariableNames.AgentLogsDirectory].ToPath();
+            var configDirectory = Path.Combine(userProfileDirectory, ".config");
 
             Logger.Info($"Ensuring UserProfile Folder: {userProfileDirectory}");
             new FileUtils().CreateFolder(userProfileDirectory);
@@ -114,6 +115,15 @@ namespace LocalAgent
 
             Logger.Info($"Ensuring Logs Folder: {logsDirectory}");
             new FileUtils().CreateFolder(logsDirectory);
+
+            Logger.Info($"Ensuring Config Folder: {configDirectory}");
+            new FileUtils().CreateFolder(configDirectory);
+
+            var dependencyCheckConfig = Path.Combine(configDirectory, "dependency-check.json");
+            if (!File.Exists(dependencyCheckConfig))
+            {
+                File.WriteAllText(dependencyCheckConfig, "{\n  \"nvdApiKey\": \"\",\n  \"nvdApiDelay\": 8000\n}\n");
+            }
 
             Logger.Info($"Creating Temp Folder: {Variables.Eval(Variables[VariableNames.AgentTempDirectory]).ToPath()}");
             new FileUtils().CreateFolder(Variables[VariableNames.AgentTempDirectory].ToPath());

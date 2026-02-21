@@ -1,0 +1,158 @@
+{
+  "tools": [
+    {
+      "name": "horusec",
+      "version": "latest",
+      "defaultArgs": ["start", "-p", "${Build.SourcesDirectory}", "-o", "json", "--json-output-file", "${Agent.TempDirectory}/horusec.json", "--disable-docker", "--config-file-path", "${Agent.HomeDirectory}/Tools/horusec-config.json"],
+      "platforms": [
+        {
+          "os": "windows",
+          "arch": "x64",
+          "url": "https://github.com/ZupIT/horusec/releases/download/v2.10.2/horusec_win_x64.zip",
+          "latestUrl": "https://github.com/ZupIT/horusec/releases/latest/download/horusec_win_x64.zip",
+          "archiveType": "zip",
+          "executablePath": "horusec.exe"
+        },
+        {
+          "os": "linux",
+          "arch": "x64",
+          "url": "https://github.com/ZupIT/horusec/releases/download/v2.10.2/horusec_linux_amd64.zip",
+          "latestUrl": "https://github.com/ZupIT/horusec/releases/latest/download/horusec_linux_amd64.zip",
+          "releaseApiUrl": "https://api.github.com/repos/ZupIT/horusec/releases/latest",
+          "assetNameContains": ["linux", "amd64"],
+          "archiveType": "raw",
+          "executablePath": "horusec"
+        }
+      ]
+    },
+    {
+      "name": "trufflehog",
+      "version": "3.73.0",
+      "defaultArgs": ["filesystem", "${Build.SourcesDirectory}", "--json"],
+      "platforms": [
+        {
+          "os": "windows",
+          "arch": "x64",
+          "url": "https://github.com/trufflesecurity/trufflehog/releases/download/v3.73.0/trufflehog_3.73.0_windows_amd64.zip",
+          "latestUrl": "https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_windows_amd64.zip",
+          "archiveType": "zip",
+          "executablePath": "trufflehog.exe"
+        },
+        {
+          "os": "linux",
+          "arch": "x64",
+          "url": "https://github.com/trufflesecurity/trufflehog/releases/download/v3.73.0/trufflehog_3.73.0_linux_amd64.tar.gz",
+          "latestUrl": "https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_linux_amd64.tar.gz",
+          "archiveType": "tar.gz",
+          "executablePath": "trufflehog"
+        }
+      ]
+    },
+    {
+      "name": "semgrep",
+      "version": "1.82.0",
+      "defaultArgs": ["--config=auto", "${Build.SourcesDirectory}", "--json"],
+      "platforms": [
+        {
+          "os": "windows",
+          "arch": "x64",
+          "url": "https://github.com/returntocorp/semgrep/releases/download/v1.82.0/semgrep-v1.82.0-windows-x86_64.zip",
+          "latestUrl": "https://github.com/returntocorp/semgrep/releases/latest/download/semgrep-windows-x86_64.zip",
+          "archiveType": "zip",
+          "executablePath": "semgrep.exe"
+        },
+        {
+          "os": "linux",
+          "arch": "x64",
+          "url": "https://github.com/returntocorp/semgrep/releases/download/v1.82.0/semgrep-v1.82.0-linux-x86_64.tar.gz",
+          "latestUrl": "https://github.com/returntocorp/semgrep/releases/latest/download/semgrep-linux-x86_64.tar.gz",
+          "archiveType": "tar.gz",
+          "executablePath": "semgrep"
+        }
+      ]
+    },
+    {
+      "name": "dependency-check",
+      "version": "12.2.0",
+      "documentationUrl": "https://dependency-check.github.io/DependencyCheck/dependency-check-cli/index.html",
+      "defaultArgs": ["--scan", "${Build.SourcesDirectory}", "--format", "JSON", "--data", "${Agent.CacheDirectory}/dependency-check"],
+      "platforms": [
+        {
+          "os": "windows",
+          "arch": "x64",
+          "url": "https://github.com/dependency-check/DependencyCheck/releases/download/v12.2.0/dependency-check-12.2.0-release.zip",
+          "latestUrl": "https://github.com/dependency-check/DependencyCheck/releases/latest/download/dependency-check-release.zip",
+          "archiveType": "zip",
+          "executablePath": "dependency-check/bin/dependency-check.bat"
+        },
+        {
+          "os": "linux",
+          "arch": "x64",
+          "url": "https://github.com/dependency-check/DependencyCheck/releases/download/v12.2.0/dependency-check-12.2.0-release.zip",
+          "latestUrl": "https://github.com/dependency-check/DependencyCheck/releases/latest/download/dependency-check-release.zip",
+          "archiveType": "zip",
+          "executablePath": "dependency-check/bin/dependency-check.sh"
+        }
+      ]
+    },
+    {
+      "name": "gitleaks",
+      "version": "8.18.2",
+      "defaultArgs": ["detect", "--source", "${Build.SourcesDirectory}", "--report-format", "json"],
+      "platforms": [
+        {
+          "os": "windows",
+          "arch": "x64",
+          "url": "https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_windows_x64.zip",
+          "latestUrl": "https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_windows_x64.zip",
+          "archiveType": "zip",
+          "executablePath": "gitleaks.exe"
+        },
+        {
+          "os": "linux",
+          "arch": "x64",
+          "url": "https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz",
+          "latestUrl": "https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_linux_x64.tar.gz",
+          "archiveType": "tar.gz",
+          "executablePath": "gitleaks"
+        }
+      ]
+    },
+    {
+      "name": "grype",
+      "version": "0.79.1",
+      "defaultArgs": ["dir:${Build.SourcesDirectory}", "--output", "json"],
+      "platforms": [
+        {
+          "os": "windows",
+          "arch": "x64",
+          "url": "https://github.com/anchore/grype/releases/download/v0.79.1/grype_0.79.1_windows_amd64.zip",
+          "latestUrl": "https://github.com/anchore/grype/releases/latest/download/grype_windows_amd64.zip",
+          "archiveType": "zip",
+          "executablePath": "grype.exe"
+        },
+        {
+          "os": "linux",
+          "arch": "x64",
+          "url": "https://github.com/anchore/grype/releases/download/v0.79.1/grype_0.79.1_linux_amd64.tar.gz",
+          "latestUrl": "https://github.com/anchore/grype/releases/latest/download/grype_linux_amd64.tar.gz",
+          "archiveType": "tar.gz",
+          "executablePath": "grype"
+        }
+      ]
+    },
+    {
+      "name": "dotnet-vulnerable",
+      "version": "",
+      "command": "dotnet",
+      "defaultArgs": ["list", "package", "--vulnerable"]
+    },
+    {
+      "name": "lizard",
+      "version": "1.17.10",
+      "documentationUrl": "https://github.com/terryyin/lizard",
+      "pythonModule": "lizard",
+      "defaultArgs": ["${Build.SourcesDirectory}"]
+    }
+  ]
+}

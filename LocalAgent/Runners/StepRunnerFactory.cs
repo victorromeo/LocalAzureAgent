@@ -28,6 +28,7 @@ namespace LocalAgent.Runners
             {PowershellRunner.Task,typeof(PowershellRunner)},
             {PublishBuildArtifactsRunner.Task, typeof(PublishBuildArtifactsRunner)},
             {ReplaceTokensRunner.Task, typeof(ReplaceTokensRunner)},
+            {StaticAnalysisRunner.Task, typeof(StaticAnalysisRunner)},
             {UpdateAssemblyInfoRunner.Task, typeof(UpdateAssemblyInfoRunner)},
             {UseDotNetRunner.Task, typeof(UseDotNetRunner)},
             {VSTestRunner.Task, typeof(VSTestRunner)},
