@@ -98,6 +98,23 @@ namespace LocalAgent
             new FileUtils().CreateFolder(Variables[VariableNames.BuildArtifactStagingDirectory].ToPath());
             new FileUtils().CreateFolder(Variables[VariableNames.BuildBinariesDirectory].ToPath());
 
+            var userProfileDirectory = Variables[VariableNames.AgentUserProfileDirectory].ToPath();
+            var toolsDirectory = Variables[VariableNames.AgentToolsDirectory].ToPath();
+            var cacheDirectory = Variables[VariableNames.AgentCacheDirectory].ToPath();
+            var logsDirectory = Variables[VariableNames.AgentLogsDirectory].ToPath();
+
+            Logger.Info($"Ensuring UserProfile Folder: {userProfileDirectory}");
+            new FileUtils().CreateFolder(userProfileDirectory);
+
+            Logger.Info($"Ensuring Tools Folder: {toolsDirectory}");
+            new FileUtils().CreateFolder(toolsDirectory);
+
+            Logger.Info($"Ensuring Cache Folder: {cacheDirectory}");
+            new FileUtils().CreateFolder(cacheDirectory);
+
+            Logger.Info($"Ensuring Logs Folder: {logsDirectory}");
+            new FileUtils().CreateFolder(logsDirectory);
+
             Logger.Info($"Creating Temp Folder: {Variables.Eval(Variables[VariableNames.AgentTempDirectory]).ToPath()}");
             new FileUtils().CreateFolder(Variables[VariableNames.AgentTempDirectory].ToPath());
         }

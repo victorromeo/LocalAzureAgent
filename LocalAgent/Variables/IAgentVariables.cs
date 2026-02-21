@@ -14,6 +14,10 @@ namespace LocalAgent.Variables
         string AgentName { get; set; }
         string AgentOs { get; }
         string AgentOsArchitecture { get; }
+        string AgentUserProfileDirectory { get; set; }
+        string AgentToolsDirectory { get; set; }
+        string AgentCacheDirectory { get; set; }
+        string AgentLogsDirectory { get; set; }
         string AgentTempDirectory { get; set; }
         string AgentWorkFolder { get; set; }
     }

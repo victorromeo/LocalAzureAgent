@@ -76,7 +76,9 @@ namespace LocalAgent
                 backgroundColor: ConsoleOutputColor.NoChange
             ));
 
-            var logFilePath = Path.Join(Environment.CurrentDirectory,$"agent_{DateTime.Now.ToString("yyMMddhhmmss")}.log");
+            var logFolder = ResolveLogFolder();
+            Directory.CreateDirectory(logFolder);
+            var logFilePath = Path.Join(logFolder,$"agent_{DateTime.Now.ToString("yyMMddhhmmss")}.log");
             FileTarget logFile = new FileTarget(nameof(logFile));
             logFile.FileName = logFilePath;
 
@@ -107,6 +109,18 @@ namespace LocalAgent
                 });
 
             Logger.Info("Finished");
+        }
+
+        private static string ResolveLogFolder()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                return Path.Combine(localAppData, "LocalAgent", ".logs");
+            }
+
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return Path.Combine(home, ".LocalAgent", ".logs");
         }
     }
 }

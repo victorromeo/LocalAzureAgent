@@ -55,6 +55,10 @@ namespace LocalAgent.Variables
         public static string AgentName = "Agent.Name";
         public static string AgentOs = "Agent.OS";
         public static string AgentOsArchitecture = "Agent.OSArchitecture";
+        public static string AgentUserProfileDirectory = "Agent.UserProfileDirectory";
+        public static string AgentToolsDirectory = "Agent.ToolsDirectory";
+        public static string AgentCacheDirectory = "Agent.CacheDirectory";
+        public static string AgentLogsDirectory = "Agent.LogsDirectory";
         public static string AgentTempDirectory = "Agent.TempDirectory";
         public static string AgentWorkFolder = "Agent.WorkFolder";
 
@@ -105,6 +109,18 @@ namespace LocalAgent.Variables
             return Path.Combine(relativeBase, path);
         }
 
+        private static string ResolveUserProfileDirectory()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                return Path.Combine(localAppData, "LocalAgent");
+            }
+
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return Path.Combine(home, ".LocalAgent");
+        }
+
         public IVariables Load(PipelineOptions options)
         {
             SourcePath = options.BuildInplace
@@ -118,6 +134,16 @@ namespace LocalAgent.Variables
                 ? Environment.CurrentDirectory
                 : Path.GetFullPath(options.AgentWorkFolder);
 
+            var userProfileDirectory = ResolveUserProfileDirectory();
+            var toolsDirectory = Path.Combine(userProfileDirectory, ".tools");
+            var cacheDirectory = Path.Combine(userProfileDirectory, ".cache");
+            var logsDirectory = Path.Combine(userProfileDirectory, ".logs");
+            var defaultTempDirectory = Path.Combine(userProfileDirectory, ".temp");
+
+            var agentTempDirectory = string.IsNullOrWhiteSpace(options.AgentTempDirectory)
+                ? defaultTempDirectory
+                : options.AgentTempDirectory;
+
             AgentVariables = new AgentVariables()
             {
                 AgentBuildDirectory = options.AgentBuildDirectory ?? string.Empty, // GetPath(Environment.CurrentDirectory, options.AgentBuildDirectory ?? string.Empty),
@@ -130,7 +156,11 @@ namespace LocalAgent.Variables
                 AgentName = options.AgentName,
                 AgentOs = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
                 AgentOsArchitecture = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString(),
-                AgentTempDirectory = options.AgentTempDirectory,
+                AgentUserProfileDirectory = userProfileDirectory,
+                AgentToolsDirectory = toolsDirectory,
+                AgentCacheDirectory = cacheDirectory,
+                AgentLogsDirectory = logsDirectory,
+                AgentTempDirectory = agentTempDirectory,
                 AgentWorkFolder = agentWorkFolder
             };
             
@@ -211,6 +241,10 @@ namespace LocalAgent.Variables
                 { VariableNames.AgentName, AgentVariables.AgentName },
                 { VariableNames.AgentOs, AgentVariables.AgentOs },
                 { VariableNames.AgentOsArchitecture, AgentVariables.AgentOsArchitecture },
+                { VariableNames.AgentUserProfileDirectory, AgentVariables.AgentUserProfileDirectory },
+                { VariableNames.AgentToolsDirectory, AgentVariables.AgentToolsDirectory },
+                { VariableNames.AgentCacheDirectory, AgentVariables.AgentCacheDirectory },
+                { VariableNames.AgentLogsDirectory, AgentVariables.AgentLogsDirectory },
                 { VariableNames.AgentTempDirectory, AgentVariables.AgentTempDirectory },
                 { VariableNames.AgentWorkFolder, AgentVariables.AgentWorkFolder },
 

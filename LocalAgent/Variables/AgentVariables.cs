@@ -63,6 +63,26 @@ namespace LocalAgent.Variables
         public string AgentOsArchitecture { get; set; }
 
         /// <summary>
+        /// User profile directory used for LocalAgent persistent storage
+        /// </summary>
+        public string AgentUserProfileDirectory { get; set; }
+
+        /// <summary>
+        /// Tooling directory under the user profile store
+        /// </summary>
+        public string AgentToolsDirectory { get; set; }
+
+        /// <summary>
+        /// Cache directory under the user profile store
+        /// </summary>
+        public string AgentCacheDirectory { get; set; }
+
+        /// <summary>
+        /// Logs directory under the user profile store
+        /// </summary>
+        public string AgentLogsDirectory { get; set; }
+
+        /// <summary>
         /// Azure DevOps Temp Directory, a folder which is cleaned after every pipeline job
         /// </summary>
         public string AgentTempDirectory { get; set; }

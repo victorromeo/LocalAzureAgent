@@ -28,7 +28,13 @@ namespace LocalAgent
         public const string AgentNameVariable = "Agent.Name";
         public const string AgentOsArchitectureVariable = "Agent.OSArchitecture";
         public const string AgentOsVariable = "Agent.OS";
-        public const string AgentTempDirectoryDefault = "${Agent.WorkFolder}/temp";
+        public const string AgentUserProfileDirectoryHelpText = "Agent.UserProfileDirectory - The per-user LocalAgent directory (Windows: %LocalAppData%\\LocalAgent, Linux: ~/.LocalAgent).";
+        public const string AgentUserProfileDirectoryVariable = "Agent.UserProfileDirectory";
+        public const string AgentToolsDirectoryHelpText = "Agent.ToolsDirectory - Tooling directory under the user profile store.";
+        public const string AgentToolsDirectoryVariable = "Agent.ToolsDirectory";
+        public const string AgentCacheDirectoryHelpText = "Agent.CacheDirectory - Cache directory under the user profile store.";
+        public const string AgentCacheDirectoryVariable = "Agent.CacheDirectory";
+        public const string AgentTempDirectoryDefault = "${Agent.UserProfileDirectory}/.temp";
         public const string AgentTempDirectoryHelpText = "Agent.TempDirectory - A temporary folder that is cleaned after each pipeline job. This directory is used by tasks such as .NET Core CLI task to hold temporary items like test results before they are published.";
         public const string AgentTempDirectoryVariable = "Agent.TempDirectory";
         public const string AgentWorkFolderDefault = "${Agent.EntryFolder}/work";
