@@ -1,3 +1,4 @@
+using Cronos;
 using LocalAgent.Service.Config;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -23,7 +24,7 @@ public sealed class CronTriggerService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var cronTriggers = _triggers
-            .Where(t => string.Equals(t.Type, "cron", StringComparison.OrdinalIgnoreCase))
+            .OfType<CronTriggerDefinition>()
             .ToList();
 
         if (cronTriggers.Count == 0)
@@ -35,21 +36,60 @@ public sealed class CronTriggerService : BackgroundService
         await Task.WhenAll(tasks);
     }
 
-    private async Task RunTriggerAsync(TriggerDefinition trigger, CancellationToken stoppingToken)
+    private async Task RunTriggerAsync(CronTriggerDefinition trigger, CancellationToken stoppingToken)
     {
-        var intervalSeconds = trigger.IntervalSeconds.GetValueOrDefault(0);
-        if (intervalSeconds <= 0)
+        if (!TryParseCron(trigger.Cron, out var cronExpression))
         {
-            _logger.LogWarning("Cron trigger '{Trigger}' has invalid IntervalSeconds.", trigger.Name);
+            _logger.LogWarning("Cron trigger '{Trigger}' has invalid cron expression.", trigger.Name);
             return;
         }
 
-        _logger.LogInformation("Cron trigger '{Trigger}' scheduled every {Seconds}s for pipeline '{Pipeline}'.", trigger.Name, intervalSeconds, trigger.Pipeline);
+        _logger.LogInformation("Cron trigger '{Trigger}' scheduled with '{Cron}' for pipeline '{Pipeline}'.", trigger.Name, trigger.Cron, trigger.Pipeline);
 
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(intervalSeconds));
-        while (await timer.WaitForNextTickAsync(stoppingToken))
+        while (!stoppingToken.IsCancellationRequested)
         {
+            var next = cronExpression.GetNextOccurrence(DateTimeOffset.Now, TimeZoneInfo.Local);
+            if (!next.HasValue)
+            {
+                _logger.LogWarning("Cron trigger '{Trigger}' has no next occurrence.", trigger.Name);
+                return;
+            }
+
+            var delay = next.Value - DateTimeOffset.Now;
+            if (delay > TimeSpan.Zero)
+            {
+                await Task.Delay(delay, stoppingToken);
+            }
+
             await _runner.RunAsync(trigger.Pipeline, stoppingToken);
+        }
+    }
+
+    private static bool TryParseCron(string? cron, out CronExpression expression)
+    {
+        if (string.IsNullOrWhiteSpace(cron))
+        {
+            expression = null!;
+            return false;
+        }
+
+        try
+        {
+            expression = CronExpression.Parse(cron, CronFormat.Standard);
+            return true;
+        }
+        catch (CronFormatException)
+        {
+            try
+            {
+                expression = CronExpression.Parse(cron, CronFormat.IncludeSeconds);
+                return true;
+            }
+            catch (CronFormatException)
+            {
+                expression = null!;
+                return false;
+            }
         }
     }
 }

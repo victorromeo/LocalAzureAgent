@@ -4,7 +4,7 @@ A simple build agent, which can run on a local .Net Core host and build source c
 
 The aim of the project is to assist the local validation of build yaml scripts prior to committing to Azure DevOps repos. 
 
-The built utility is suitable for one hit compilation as a command line utility, or alternatively, can be installed and run as service, and continuously executing the pipeline.
+LocalAgent is a single-run CLI for executing a pipeline once. Triggered/continuous execution is handled by LocalAgent.Service.
 
 ## Comments and Recommendations
 
@@ -87,8 +87,6 @@ LocalAgent.exe <source> <yaml> <options>
                      published.
 
   --work             (Default: ${Agent.EntryFolder}/work) Agent.WorkFolder - The working directory for this agent. For example: c:\agent_work
-
-  --daemon           (Default: false) True - Run as Windows Service, False - Run then exit immediately
 
   --def              (Default: dev) Build.DefinitionName - Alias of build, For example. dev
 

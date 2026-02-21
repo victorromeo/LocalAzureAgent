@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using LocalAgent.Service.Config;
+using Microsoft.Extensions.Configuration;
 using LocalAgent.Service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,12 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<ServiceOptions>(builder.Configuration.GetSection("Service"));
 
 var pipelines = builder.Configuration.GetSection("Pipelines").Get<List<PipelineDefinition>>() ?? new List<PipelineDefinition>();
-var triggers = builder.Configuration.GetSection("Triggers").Get<List<TriggerDefinition>>() ?? new List<TriggerDefinition>();
+var triggers = LoadConfiguredTriggers(builder.Configuration);
+triggers.AddRange(LoadTriggerFiles(builder.Environment.ContentRootPath));
 
 builder.Services.AddSingleton(new PipelineCatalog(pipelines, builder.Environment.ContentRootPath));
 builder.Services.AddSingleton(triggers.AsEnumerable());
 builder.Services.AddSingleton<PipelineRunner>();
 builder.Services.AddHostedService<CronTriggerService>();
+builder.Services.AddHostedService<FileWatchTriggerService>();
 
 var app = builder.Build();
 
@@ -27,7 +31,7 @@ if (serviceOptions.Http?.Urls?.Length > 0)
     }
 }
 
-foreach (var trigger in triggers.Where(t => string.Equals(t.Type, "webhook", StringComparison.OrdinalIgnoreCase)))
+foreach (var trigger in triggers.OfType<WebhookTriggerDefinition>())
 {
     var path = string.IsNullOrWhiteSpace(trigger.Path) ? $"/webhooks/{trigger.Name}" : trigger.Path;
 
@@ -51,8 +55,14 @@ foreach (var trigger in triggers.Where(t => string.Equals(t.Type, "webhook", Str
         {
             if (!string.IsNullOrWhiteSpace(trigger.Secret))
             {
-                if (!request.Headers.TryGetValue("X-Hub-Signature-256", out var sigHeader)
-                    || !VerifyGitHubSignature(trigger.Secret, payload, sigHeader))
+                if (!request.Headers.TryGetValue("X-Hub-Signature-256", out var sigHeader))
+                {
+                    return Results.Unauthorized();
+                }
+
+                var signatureValue = sigHeader.ToString() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(signatureValue)
+                    || !VerifyGitHubSignature(trigger.Secret, payload, signatureValue))
                 {
                     return Results.Unauthorized();
                 }
@@ -82,7 +92,112 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.Run();
 
-static bool VerifyGitHubSignature(string secret, string payload, string signatureHeader)
+static IEnumerable<TriggerDefinition> LoadTriggerFiles(string contentRootPath)
+{
+    var triggersFolder = Path.Combine(contentRootPath, ".triggers");
+    if (!Directory.Exists(triggersFolder))
+    {
+        return Array.Empty<TriggerDefinition>();
+    }
+
+    var options = new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    var results = new List<TriggerDefinition>();
+    foreach (var filePath in Directory.EnumerateFiles(triggersFolder, "*.json", SearchOption.TopDirectoryOnly))
+    {
+        try
+        {
+            var json = File.ReadAllText(filePath);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                continue;
+            }
+
+            json = json.Trim();
+            if (json.StartsWith("["))
+            {
+                var list = JsonSerializer.Deserialize<List<TriggerDefinition>>(json, options);
+                if (list is { Count: > 0 })
+                {
+                    results.AddRange(list.Where(t => t != null));
+                }
+            }
+            else
+            {
+                var trigger = JsonSerializer.Deserialize<TriggerDefinition>(json, options);
+                if (trigger != null)
+                {
+                    results.Add(trigger);
+                }
+            }
+        }
+        catch
+        {
+            // Ignore malformed trigger files to avoid blocking startup
+        }
+    }
+
+    return results;
+}
+
+static List<TriggerDefinition> LoadConfiguredTriggers(IConfiguration configuration)
+{
+    var records = configuration.GetSection("Triggers").Get<List<TriggerDefinitionRecord>>()
+        ?? new List<TriggerDefinitionRecord>();
+    var results = new List<TriggerDefinition>();
+
+    foreach (var record in records)
+    {
+        if (string.IsNullOrWhiteSpace(record.Type))
+        {
+            continue;
+        }
+
+        switch (record.Type.Trim().ToLowerInvariant())
+        {
+            case "webhook":
+                results.Add(new WebhookTriggerDefinition
+                {
+                    Name = record.Name ?? string.Empty,
+                    Pipeline = record.Pipeline ?? string.Empty,
+                    Provider = record.Provider,
+                    AllowedEvents = record.AllowedEvents,
+                    Path = record.Path,
+                    Secret = record.Secret
+                });
+                break;
+            case "cron":
+                results.Add(new CronTriggerDefinition
+                {
+                    Name = record.Name ?? string.Empty,
+                    Pipeline = record.Pipeline ?? string.Empty,
+                    Cron = record.Cron
+                });
+                break;
+            case "file":
+            case "filesystem":
+            case "filewatch":
+                results.Add(new FileWatchTriggerDefinition
+                {
+                    Name = record.Name ?? string.Empty,
+                    Pipeline = record.Pipeline ?? string.Empty,
+                    WatchPath = record.WatchPath,
+                    Include = record.Include,
+                    Exclude = record.Exclude,
+                    Recursive = record.Recursive,
+                    DebounceSeconds = record.DebounceSeconds
+                });
+                break;
+        }
+    }
+
+    return results;
+}
+
+static bool VerifyGitHubSignature(string secret, string payload, string? signatureHeader)
 {
     if (string.IsNullOrWhiteSpace(signatureHeader))
     {

@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Cronos" Version="0.7.0" />
     <ProjectReference Include="..\LocalAgent\LocalAgent.csproj" />
   </ItemGroup>
 

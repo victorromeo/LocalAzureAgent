@@ -34,9 +34,6 @@ namespace LocalAgent
         public const string AgentWorkFolderDefault = "${Agent.EntryFolder}/work";
         public const string AgentWorkFolderHelpText = "Agent.WorkFolder - The working directory for this agent. For example: c:\\agent_work";
         public const string AgentWorkFolderVariable = "Agent.WorkFolder";
-        public const bool BackgroundServiceDefault = false;
-        public const string BackgroundServiceHelpText = "True - Run as Windows Service, False - Run then exit immediately";
-        public const string BackgroundServiceVariable = "Agent.BackgroundService";
         public const string BuildDefinitionNameDefault = "dev";
         public const string BuildDefinitionNameHelpText = "Build.DefinitionName - Alias of build, For example. dev";
         public const string NugetFolderDefault = "../nuget";
@@ -107,14 +104,6 @@ namespace LocalAgent
         [Option("work", Default = AgentWorkFolderDefault, HelpText = AgentWorkFolderHelpText)]
         [AgentVariable(AgentWorkFolderVariable)]
         public string AgentWorkFolder { get; set; }
-
-        /// <summary>
-        /// Option to support running as a background service.
-        /// When true, the agent runs continuously in the background.
-        /// When false, the agent will exit immediately after the build concludes.
-        /// </summary>
-        [Option("daemon", Default = BackgroundServiceDefault, HelpText = BackgroundServiceHelpText)]
-        public bool BackgroundService { get; set; }
 
         [Option("def",Default = BuildDefinitionNameDefault, HelpText = BuildDefinitionNameHelpText)]
         public string BuildDefinitionName { get; set; }

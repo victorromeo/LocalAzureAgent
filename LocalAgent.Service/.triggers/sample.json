@@ -1,0 +1,27 @@
+[
+  {
+    "Type": "webhook",
+    "Name": "webapp1",
+    "Pipeline": "WebApplication1",
+    "Provider": "github",
+    "Path": "/webhooks/webapp1",
+    "Secret": "changeme",
+    "AllowedEvents": ["push"]
+  },
+  {
+    "Type": "cron",
+    "Name": "webapp1-interval",
+    "Pipeline": "WebApplication1",
+    "Cron": "0 * * * *"
+  },
+  {
+    "Type": "file",
+    "Name": "webapp1-files",
+    "Pipeline": "WebApplication1",
+    "WatchPath": "Samples/WebApplication1",
+    "Include": ["**/*.cs", "**/*.csproj", "**/*.yml", "**/*.yaml"],
+    "Exclude": ["**/bin/**", "**/obj/**"],
+    "Recursive": true,
+    "DebounceSeconds": 3
+  }
+]

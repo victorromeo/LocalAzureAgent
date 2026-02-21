@@ -7,10 +7,8 @@ using System.Runtime.CompilerServices;
 using CommandLine;
 using LocalAgent.Variables;
 using NLog;
-using NLog.Conditions;
 using NLog.Config;
 using NLog.Targets;
-using Topshelf;
 
 #endregion
 
@@ -93,33 +91,8 @@ namespace LocalAgent
             Parser.Default.ParseArguments<PipelineOptions>(args)
                 .WithParsed(o =>
                 {
-                    if (o.BackgroundService)
-                    {
-                        var rc = HostFactory.Run(x =>
-                        {
-                            x.Service<PipelineAgent>(s =>
-                            {
-                                s.ConstructUsing(n => new PipelineAgent(o));
-                                s.WhenStarted(tc => tc.Start());
-                                s.WhenStopped(tc => tc.Stop());
-                            });
-
-                            x.RunAsLocalSystem();
-
-                            x.SetDescription("LocalAgent Pipeline Agent");
-                            x.SetDisplayName("LocalAgent");
-                            x.SetServiceName("LocalAgent");
-                            x.UseNLog();
-                        });
-
-                        var exitCode = (int) Convert.ChangeType(rc, rc.GetTypeCode());
-                        Environment.ExitCode = exitCode;
-                    }
-                    else
-                    {
-                        var agent = new PipelineAgent(o);
-                        Environment.ExitCode = agent.Run();
-                    }
+                    var agent = new PipelineAgent(o);
+                    Environment.ExitCode = agent.Run();
                 }).WithNotParsed(e =>
                 {
                     var appName = Assembly.GetEntryAssembly().GetName().Name;

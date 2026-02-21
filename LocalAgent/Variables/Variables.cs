@@ -20,7 +20,6 @@ namespace LocalAgent.Variables
         string YamlPath { get; set; }
         string SourcePath { get; set; }
 
-        bool BackgroundService { get; set; }
         string NugetFolder { get; set; }
         string WorkFolderBase { get; set; }
         string BuildNumber { get; set; }
@@ -85,7 +84,6 @@ namespace LocalAgent.Variables
         public string YamlPath { get; set; }
         public string SourcePath { get; set; }
         public string WorkFolderBase { get; set; }
-        public bool BackgroundService { get; set; }
         public string NugetFolder { get; set; }
 
         public string BuildNumber
@@ -115,7 +113,6 @@ namespace LocalAgent.Variables
 
             YamlPath = options.YamlPath;
             NugetFolder = options.NugetFolder;
-            BackgroundService = options.BackgroundService;
 
             var agentWorkFolder = string.IsNullOrWhiteSpace(options.AgentWorkFolder)
                 ? Environment.CurrentDirectory
