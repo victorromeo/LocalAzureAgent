@@ -84,6 +84,15 @@ namespace LocalAgent.Runners.Tasks
                     case "dependency-check":
                         toolInstance = new LocalAgent.Runners.Tasks.Tools.DependencyCheckTool();
                         break;
+                    case "gitleaks":
+                        toolInstance = new LocalAgent.Runners.Tasks.Tools.GitleaksTool();
+                        break;
+                    case "grype":
+                        toolInstance = new LocalAgent.Runners.Tasks.Tools.GrypeTool();
+                        break;
+                    case "dotnet-vulnerable":
+                        toolInstance = new LocalAgent.Runners.Tasks.Tools.DotNetVulnerableTool(tool);
+                        break;
                     // case "dotnet-vulnerable":
                     //     toolInstance = new DotNetVulnerableTool(tool);
                     //     break;
@@ -111,32 +120,51 @@ namespace LocalAgent.Runners.Tasks
                 var argsList = BuildArguments(tool, context, stage, job);
                 var argsString = argsList.Count > 0 ? string.Join(' ', argsList) : string.Empty;
 
-                var result = toolInstance.RunToolAsync(toolPath, argsString, CancellationToken.None)
-                    .GetAwaiter().GetResult();
-
-                // Log tool output for visibility
-                if (result != null)
+                // Ensure the tool runs with the configured working directory so tools like `dotnet list package`
+                // operate on the target project/solution rather than the agent process directory.
+                var originalCwd = Environment.CurrentDirectory;
+                try
                 {
-                    if (!string.IsNullOrWhiteSpace(result.StandardOutput))
+                    if (!string.IsNullOrWhiteSpace(workingDirectory) && Directory.Exists(workingDirectory))
                     {
-                        GetLogger().Info($"[{tool.Name}] stdout: {result.StandardOutput}");
+                        Environment.CurrentDirectory = workingDirectory;
                     }
 
-                    if (!string.IsNullOrWhiteSpace(result.StandardError))
+                    var result = toolInstance.RunToolAsync(toolPath, argsString, CancellationToken.None)
+                        .GetAwaiter().GetResult();
+
+                    // Log tool output for visibility
+                    if (result != null)
                     {
-                        GetLogger().Info($"[{tool.Name}] stderr: {result.StandardError}");
+                        if (!string.IsNullOrWhiteSpace(result.StandardOutput))
+                        {
+                            GetLogger().Info($"[{tool.Name}] stdout: {result.StandardOutput}");
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(result.StandardError))
+                        {
+                            GetLogger().Info($"[{tool.Name}] stderr: {result.StandardError}");
+                        }
+
+                        if (result.ExitCode != 0)
+                        {
+                            GetLogger().Warn($"Tool '{tool.Name}' exited with code {result.ExitCode}");
+                            status = StatusTypes.Error;
+                        }
+                    }
+                    else
+                    {
+                        GetLogger().Warn($"Tool '{tool.Name}' did not return a result.");
                     }
 
-                    if (result.ExitCode != 0)
-                    {
-                        GetLogger().Warn($"Tool '{tool.Name}' exited with code {result.ExitCode}");
-                        status = StatusTypes.Error;
-                    }
+                    // Continue to next tool
+                    continue;
                 }
-                else
+                finally
                 {
-                    GetLogger().Warn($"Tool '{tool.Name}' did not return a result.");
-                }        
+                    try { Environment.CurrentDirectory = originalCwd; } catch { }
+                }
+                
             }
 
             return status;
