@@ -9,7 +9,7 @@ using LocalAgent.Utilities;
 using LocalAgent.Variables;
 using NLog;
 
-namespace LocalAgent.Runners.Task
+namespace LocalAgent.Runners.Tasks
 {
     //- task: UseDotNet@2
     //  inputs:

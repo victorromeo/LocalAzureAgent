@@ -4,7 +4,7 @@ using LocalAgent.Models;
 using LocalAgent.Utilities;
 using NLog;
 
-namespace LocalAgent.Runners.Task
+namespace LocalAgent.Runners.Tasks
 {
     //- task: BatchScript@1
     //  inputs:

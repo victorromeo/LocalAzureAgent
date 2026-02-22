@@ -5,7 +5,7 @@ using LocalAgent.Utilities;
 using LocalAgent.Models;
 using NLog;
 
-namespace LocalAgent.Runners.Task
+namespace LocalAgent.Runners.Tasks
 {
     //- task: ArchiveFiles@2
     //  inputs:

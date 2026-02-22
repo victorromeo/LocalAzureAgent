@@ -6,7 +6,7 @@ using LocalAgent.Models;
 using LocalAgent.Utilities;
 using NLog;
 
-namespace LocalAgent.Runners.Task
+namespace LocalAgent.Runners.Tasks
 {
     //- task: NodeTool@0
     //  inputs:

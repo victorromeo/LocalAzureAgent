@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace LocalAgent.Runners.Task
+namespace LocalAgent.Runners.Tasks
 {
     // - task: NuGetCommand@2
     //   inputs:

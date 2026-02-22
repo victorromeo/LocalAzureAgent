@@ -7,7 +7,7 @@ using LocalAgent.Variables;
 using LocalAgent.Utilities;
 using System;
 
-namespace LocalAgent.Runners.Task
+namespace LocalAgent.Runners.Tasks
 {
     //- task: BatchScript@1
     //  inputs:

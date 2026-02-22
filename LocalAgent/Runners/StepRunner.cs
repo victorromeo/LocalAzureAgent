@@ -86,11 +86,32 @@ namespace LocalAgent.Runners
                 process.BeginOutputReadLine();
                 process.ErrorDataReceived += (sender, e) =>
                 {
-                    if (e.Data != null)
+                    if (e.Data == null) return;
+
+                    // If the caller set environment variable LOCALAGENT_STDERR_ALLOWED with
+                    // pipe-separated tokens, treat stderr lines containing any token as non-error.
+                    try
                     {
-                        Logger.Error(MaskSecrets(e.Data ?? string.Empty, context));
-                        status = StatusTypes.Error;
+                        var env = processInfo.EnvironmentVariables.ContainsKey("LOCALAGENT_STDERR_ALLOWED")
+                            ? processInfo.EnvironmentVariables["LOCALAGENT_STDERR_ALLOWED"]
+                            : null;
+                        if (!string.IsNullOrWhiteSpace(env))
+                        {
+                            var tokens = env.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                            if (tokens.Any(t => e.Data.IndexOf(t, StringComparison.OrdinalIgnoreCase) >= 0))
+                            {
+                                Logger.Info(MaskSecrets(e.Data, context));
+                                return;
+                            }
+                        }
                     }
+                    catch
+                    {
+                        // ignore env parsing errors and fall back to treating stderr as error
+                    }
+
+                    Logger.Error(MaskSecrets(e.Data ?? string.Empty, context));
+                    status = StatusTypes.Error;
                 };
                 if (onError != null) process.ErrorDataReceived += onError;
                 

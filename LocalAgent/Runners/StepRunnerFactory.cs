@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using LocalAgent.Models;
 using LocalAgent.Runners.Base;
-using LocalAgent.Runners.Task;
+using LocalAgent.Runners.Tasks;
 
 namespace LocalAgent.Runners
 {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using LocalAgent.Models;
-using LocalAgent.Runners.Task;
+using LocalAgent.Runners.Tasks;
 using LocalAgent.Variables;
 using Moq;
 using NLog;

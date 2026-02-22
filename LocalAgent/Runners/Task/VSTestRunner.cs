@@ -8,7 +8,7 @@ using LocalAgent.Utilities;
 using LocalAgent.Variables;
 using NLog;
 
-namespace LocalAgent.Runners.Task
+namespace LocalAgent.Runners.Tasks
 {
     //- task: VSTest@2
     //  inputs:

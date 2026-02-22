@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using LocalAgent.Models;
-using LocalAgent.Runners.Task;
+using LocalAgent.Runners.Tasks;
 using Moq;
 using Xunit;
 

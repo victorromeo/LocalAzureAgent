@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using LocalAgent.Models;
-using LocalAgent.Runners.Task;
+using LocalAgent.Runners.Tasks;
 using Xunit;
 
 namespace LocalAgent.Tests

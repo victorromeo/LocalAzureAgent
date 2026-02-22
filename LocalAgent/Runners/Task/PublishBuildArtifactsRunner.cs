@@ -1,7 +1,7 @@
 ﻿using LocalAgent.Models;
 using NLog;
 
-namespace LocalAgent.Runners.Task
+namespace LocalAgent.Runners.Tasks
 {
     //- task: PublishBuildArtifacts@1
     //  inputs:

@@ -41,10 +41,17 @@ namespace LocalAgent.Utilities
         public string? LatestUrl { get; set; }
         public string? ReleaseApiUrl { get; set; }
         public string[]? AssetNameContains { get; set; }
+        // Optional tokens; if stderr contains any of these tokens it should be treated as non-error output.
+        public string[]? StdErrContains { get; set; }
         public string ArchiveType { get; set; } = "zip";
         public string? ExecutablePath { get; set; }
     }
 
+    /// <summary>
+    /// Loads the tool manifest which defines metadata for tools that StaticAnalysisRunner can auto-install. 
+    /// The manifest is expected to be in JSON format and located at Tools/ToolManifest.json relative to the LocalAgent executable, but a custom path can also be provided. 
+    /// If the manifest file is missing or invalid, an empty manifest will be returned, meaning no tools are available for auto-installation.
+    /// </summary>
     public static class ToolManifestLoader
     {
         public static ToolManifest LoadDefault()

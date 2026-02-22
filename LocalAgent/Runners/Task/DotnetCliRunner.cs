@@ -5,7 +5,7 @@ using LocalAgent.Models;
 using LocalAgent.Variables;
 using NLog;
 
-namespace LocalAgent.Runners.Task
+namespace LocalAgent.Runners.Tasks
 {
     //- task: DotNetCoreCLI@2
     //  inputs:

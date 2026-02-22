@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using LocalAgent;
 using LocalAgent.Models;
-using LocalAgent.Runners.Task;
+using LocalAgent.Runners.Tasks;
 using Moq;
 using Xunit;
 

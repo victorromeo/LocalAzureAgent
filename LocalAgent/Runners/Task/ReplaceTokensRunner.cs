@@ -12,7 +12,7 @@ using LocalAgent.Variables;
 using NLog;
 using YamlDotNet.Serialization;
 
-namespace LocalAgent.Runners.Task
+namespace LocalAgent.Runners.Tasks
 {
     //- task: qetza.replacetokens.replacetokens-task.replacetokens@6
     //  inputs:

@@ -108,5 +108,14 @@ namespace LocalAgent.Runners
             return new ProcessStartInfo("/bin/bash", $"-c \"{command}\"");
         }
 
+        /// <summary>
+        /// Create a ProcessStartInfo that will run multiple commands in the same shell process.
+        /// Commands are joined with the shell conditional `&&` so a failure stops subsequent commands.
+        /// </summary>
+        public static ProcessStartInfo CreateShellProcessStartInfo(System.Collections.Generic.IEnumerable<string> commands)
+        {
+            return CreateShellProcessStartInfo(string.Join(" && ", commands));
+        }
+
     }
 }

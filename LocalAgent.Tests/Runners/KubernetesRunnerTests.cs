@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using LocalAgent;
 using LocalAgent.Models;
-using LocalAgent.Runners.Task;
+using LocalAgent.Runners.Tasks;
 using Moq;
 using NLog;
 using Xunit;

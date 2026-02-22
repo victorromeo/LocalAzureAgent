@@ -7,7 +7,7 @@ using LocalAgent.Utilities;
 using LocalAgent.Variables;
 using NLog;
 
-namespace LocalAgent.Runners.Task
+namespace LocalAgent.Runners.Tasks
 {
     //- task: Docker@2
     //  inputs:

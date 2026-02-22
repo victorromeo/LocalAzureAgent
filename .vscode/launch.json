@@ -26,6 +26,69 @@
       }
     },
     {
+      "name": "Run ConsoleApp1 Pipeline (dll)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/LocalAgent/bin/Debug/net9.0/LocalAgent.dll",
+      "args": [
+        "ConsoleApp1",
+        "pipeline.yml",
+        "--work",
+        "work",
+        "--id",
+        "1"
+      ],
+      "cwd": "${workspaceFolder}/Samples",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "preLaunchTask": "build",
+      "env": {
+        "TeamProject": "TP"
+      }
+    },
+    {
+      "name": "Run WebApplication1 Pipeline (dll)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/LocalAgent/bin/Debug/net9.0/LocalAgent.dll",
+      "args": [
+        "WebApplication1",
+        "pipeline.yml",
+        "--work",
+        "work",
+        "--id",
+        "2"
+      ],
+      "cwd": "${workspaceFolder}/Samples",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "preLaunchTask": "build",
+      "env": {
+        "TeamProject": "TP"
+      }
+    },
+    {
+      "name": "Run WindowsFormsApp1 Pipeline (dll)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/LocalAgent/bin/Debug/net9.0/LocalAgent.dll",
+      "args": [
+        "WindowsFormsApp1",
+        "pipeline.yml",
+        "--work",
+        "work",
+        "--id",
+        "3"
+      ],
+      "cwd": "${workspaceFolder}/Samples",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "preLaunchTask": "build",
+      "env": {
+        "TeamProject": "TP"
+      }
+    },
+    {
       "name": "Run WebApplication1 Pipeline",
       "type": "coreclr",
       "request": "launch",

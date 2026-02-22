@@ -16,12 +16,9 @@
         {
           "os": "linux",
           "arch": "x64",
-          "url": "https://github.com/ZupIT/horusec/releases/download/v2.10.2/horusec_linux_amd64.zip",
-          "latestUrl": "https://github.com/ZupIT/horusec/releases/latest/download/horusec_linux_amd64.zip",
           "releaseApiUrl": "https://api.github.com/repos/ZupIT/horusec/releases/latest",
           "assetNameContains": ["linux", "amd64"],
-          "archiveType": "raw",
-          "executablePath": "horusec"
+          "archiveType": "raw"
         }
       ]
     },
@@ -36,7 +33,8 @@
           "url": "https://github.com/trufflesecurity/trufflehog/releases/download/v3.73.0/trufflehog_3.73.0_windows_amd64.zip",
           "latestUrl": "https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_windows_amd64.zip",
           "archiveType": "zip",
-          "executablePath": "trufflehog.exe"
+          "executablePath": "trufflehog.exe",
+          "stdErrContains": [ "trufflehog" ]
         },
         {
           "os": "linux",
@@ -44,32 +42,16 @@
           "url": "https://github.com/trufflesecurity/trufflehog/releases/download/v3.73.0/trufflehog_3.73.0_linux_amd64.tar.gz",
           "latestUrl": "https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_linux_amd64.tar.gz",
           "archiveType": "tar.gz",
-          "executablePath": "trufflehog"
+          "executablePath": "trufflehog",
+          "stdErrContains": [ "trufflehog" ]
         }
       ]
     },
     {
       "name": "semgrep",
       "version": "1.82.0",
-      "defaultArgs": ["--config=auto", "${Build.SourcesDirectory}", "--json"],
-      "platforms": [
-        {
-          "os": "windows",
-          "arch": "x64",
-          "url": "https://github.com/returntocorp/semgrep/releases/download/v1.82.0/semgrep-v1.82.0-windows-x86_64.zip",
-          "latestUrl": "https://github.com/returntocorp/semgrep/releases/latest/download/semgrep-windows-x86_64.zip",
-          "archiveType": "zip",
-          "executablePath": "semgrep.exe"
-        },
-        {
-          "os": "linux",
-          "arch": "x64",
-          "url": "https://github.com/returntocorp/semgrep/releases/download/v1.82.0/semgrep-v1.82.0-linux-x86_64.tar.gz",
-          "latestUrl": "https://github.com/returntocorp/semgrep/releases/latest/download/semgrep-linux-x86_64.tar.gz",
-          "archiveType": "tar.gz",
-          "executablePath": "semgrep"
-        }
-      ]
+      "pythonModule": "semgrep",
+      "defaultArgs": ["--config=auto", "${Build.SourcesDirectory}", "--json"]
     },
     {
       "name": "dependency-check",

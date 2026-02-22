@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Text.Json;
 using LocalAgent.Models;
@@ -9,7 +10,9 @@ using LocalAgent.Utilities;
 using LocalAgent.Variables;
 using NLog;
 
-namespace LocalAgent.Runners.Task
+
+
+namespace LocalAgent.Runners.Tasks
 {
     //- task: StaticAnalysis@1
     //  inputs:
@@ -51,7 +54,6 @@ namespace LocalAgent.Runners.Task
                 return StatusTypes.Warning;
             }
 
-            var installer = new ToolInstaller();
             var status = StatusTypes.InProgress;
 
             foreach (var tool in toolList)
@@ -61,18 +63,80 @@ namespace LocalAgent.Runners.Task
                     break;
                 }
 
-                // Ensure tool is installed (download + extract) and return executable path.
-                var executable = installer.EnsureToolAsync(tool, toolsRoot, CancellationToken.None)
+                LocalAgent.Runners.Tasks.Tools.ToolBase toolInstance = null;
+
+                GetLogger().Info($"Processing tool '{tool.Name}'...");
+
+                switch (tool.Name.ToLowerInvariant())
+                {
+                    case "semgrep":
+                        toolInstance = new LocalAgent.Runners.Tasks.Tools.SemgrepTool(); 
+                        break;
+                    case "lizard":
+                        toolInstance = new LocalAgent.Runners.Tasks.Tools.LizardTool();
+                        break;
+                    case "trufflehog":
+                        toolInstance = new LocalAgent.Runners.Tasks.Tools.TruffleHogTool();
+                        break;
+                    case "horusec":
+                        toolInstance = new LocalAgent.Runners.Tasks.Tools.HorusecTool();
+                        break;                    
+                    case "dependency-check":
+                        toolInstance = new LocalAgent.Runners.Tasks.Tools.DependencyCheckTool();
+                        break;
+                    // case "dotnet-vulnerable":
+                    //     toolInstance = new DotNetVulnerableTool(tool);
+                    //     break;
+                    default:
+                        GetLogger().Warn($"No runner implementation for tool '{tool.Name}', skipping.");
+                        continue;
+                }
+
+
+                if (toolInstance == null)
+                {
+                    GetLogger().Warn($"Failed to create tool instance for '{tool.Name}', skipping.");
+                    continue;
+                }
+
+                string toolPath = toolInstance.EnsureToolAsync(tool, toolInstance.ToolsPath, CancellationToken.None)
                     .GetAwaiter().GetResult();
 
-                var args = BuildArguments(tool, context, stage, job);
-                var command = new CommandLineCommandBuilder(executable)
-                    .ArgWorkingDirectory(workingDirectory)
-                    .ArgIf(args.Count > 0, string.Join(" ", args));
+                if (string.IsNullOrWhiteSpace(toolPath))
+                {
+                    GetLogger().Warn($"Failed to ensure tool '{tool.Name}', skipping.");
+                    continue;
+                }                    
 
-                var processInfo = command.Compile(context, stage, job, StepTask);
-                GetLogger().Info($"COMMAND: '{processInfo.FileName} {processInfo.Arguments}'");
-                status = RunProcess(processInfo, null, null, context);
+                var argsList = BuildArguments(tool, context, stage, job);
+                var argsString = argsList.Count > 0 ? string.Join(' ', argsList) : string.Empty;
+
+                var result = toolInstance.RunToolAsync(toolPath, argsString, CancellationToken.None)
+                    .GetAwaiter().GetResult();
+
+                // Log tool output for visibility
+                if (result != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(result.StandardOutput))
+                    {
+                        GetLogger().Info($"[{tool.Name}] stdout: {result.StandardOutput}");
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(result.StandardError))
+                    {
+                        GetLogger().Info($"[{tool.Name}] stderr: {result.StandardError}");
+                    }
+
+                    if (result.ExitCode != 0)
+                    {
+                        GetLogger().Warn($"Tool '{tool.Name}' exited with code {result.ExitCode}");
+                        status = StatusTypes.Error;
+                    }
+                }
+                else
+                {
+                    GetLogger().Warn($"Tool '{tool.Name}' did not return a result.");
+                }        
             }
 
             return status;
