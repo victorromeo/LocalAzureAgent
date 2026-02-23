@@ -90,6 +90,9 @@ namespace LocalAgent.Runners.Tasks
                     case "grype":
                         toolInstance = new LocalAgent.Runners.Tasks.Tools.GrypeTool();
                         break;
+                    case "syft":
+                        toolInstance = new LocalAgent.Runners.Tasks.Tools.SyftTool();
+                        break;
                     case "dotnet-vulnerable":
                         toolInstance = new LocalAgent.Runners.Tasks.Tools.DotNetVulnerableTool(tool);
                         break;

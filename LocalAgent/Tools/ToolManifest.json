@@ -135,6 +135,33 @@
       ]
     },
     {
+      "name": "syft",
+      "version": "latest",
+      "description": "Syft generates a Software Bill of Materials (SBOM) for container images and filesystems.",
+      "documentationUrl": "https://github.com/anchore/syft",
+      "defaultArgs": ["dir:${Build.SourcesDirectory}", "--output", "json"],
+      "platforms": [
+        {
+          "os": "windows",
+          "arch": "x64",
+          "releaseApiUrl": "https://api.github.com/repos/anchore/syft/releases/latest",
+          "assetNameContains": ["windows", "amd64", "zip"],
+          "latestUrl": "https://github.com/anchore/syft/releases/latest/download/syft_windows_amd64.zip",
+          "archiveType": "zip",
+          "executablePath": "syft.exe"
+        },
+        {
+          "os": "linux",
+          "arch": "x64",
+          "releaseApiUrl": "https://api.github.com/repos/anchore/syft/releases/latest",
+          "assetNameContains": ["linux", "amd64", "tar.gz"],
+          "latestUrl": "https://github.com/anchore/syft/releases/latest/download/syft_linux_amd64.tar.gz",
+          "archiveType": "tar.gz",
+          "executablePath": "syft"
+        }
+      ]
+    },
+    {
       "name": "dotnet-vulnerable",
       "version": "",
       "description": "dotnet list package --vulnerable is a command that lists all the NuGet packages in a .NET project that have known vulnerabilities. It helps developers identify and address security issues in their dependencies.",
