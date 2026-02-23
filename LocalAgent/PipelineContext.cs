@@ -89,7 +89,7 @@ namespace LocalAgent
             }
 
             return this;
-        }
+        }       
 
         private void CreateFolderStructure()
         {
@@ -131,6 +131,30 @@ namespace LocalAgent
 
         private void CleanWorkFolder()
         {
+            if (_pipelineOptions.BuildInplace) 
+            {
+                Logger.Info("Skipping clean of source directory, as building inplace");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Variables[VariableNames.BuildSourcesDirectory]))
+            {
+                Logger.Warn("BuildSourcesDirectory is not set; skipping clean of work folder.");
+                return;
+            }
+
+            if (!Directory.Exists(Variables[VariableNames.BuildSourcesDirectory].ToPath()))
+            {
+                Logger.Warn($"BuildSourcesDirectory '{Variables[VariableNames.BuildSourcesDirectory]}' does not exist; skipping clean of work folder.");
+                return;
+            }
+
+            if (new DirectoryInfo(Variables[VariableNames.BuildSourcesDirectory].ToPath()).FullName == new DirectoryInfo(Variables.WorkFolderBase.ToPath()).FullName)
+            {
+                Logger.Warn("BuildSourcesDirectory is the same as WorkFolderBase; skipping clean of work folder.");
+                return;
+            }
+
             Logger.Info($"Cleaning Work Folders: {Variables.Eval(Variables.WorkFolderBase).ToPath()}");
             new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildSourcesDirectory].ToPath());
             new FileUtils().DeleteFolderContent(Variables[VariableNames.BuildArtifactStagingDirectory].ToPath());
@@ -146,6 +170,11 @@ namespace LocalAgent
 
         public void CleanTempFolder()
         {
+            if (string.IsNullOrWhiteSpace(Variables[VariableNames.AgentTempDirectory]))            {
+                Logger.Warn("AgentTempDirectory is not set; skipping clean of temp folder.");
+                return;
+            }
+            
             CleanupTempFiles();
             Logger.Info($"Cleaning Temp Folder: {Variables[VariableNames.AgentTempDirectory]}");
             new FileUtils().DeleteFolderContent(Variables[VariableNames.AgentTempDirectory].ToPath());

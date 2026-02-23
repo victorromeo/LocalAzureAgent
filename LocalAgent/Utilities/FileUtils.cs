@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using LocalAgent.Variables;
@@ -74,6 +75,9 @@ namespace LocalAgent.Utilities
         /// <param name="destinationPath">Folder destination to receive content</param>
         public void CloneFolder(string sourcePath, string destinationPath)
         {
+            GuardPreventDamageToSystemFolders(sourcePath);
+            GuardPreventDamageToSystemFolders(destinationPath);
+
             var sourceDirectory = new DirectoryInfo(sourcePath);
             if (!sourceDirectory.Exists)
             {
@@ -90,6 +94,8 @@ namespace LocalAgent.Utilities
         /// <param name="path"></param>
         public void DeleteFolderContent(string path)
         {
+            GuardPreventDamageToSystemFolders(path);
+
             var info = new DirectoryInfo(path);
             if (!info.Exists)
             {
@@ -107,6 +113,9 @@ namespace LocalAgent.Utilities
 
         /// Recursive operation to clear Read Only flags from Files and Directories
         public void ClearReadOnlyFlag(string path) {
+
+            GuardPreventDamageToSystemFolders(path);
+
             Logger.Info($"Clearing ReadOnly flags in {path}");
 
             new DirectoryInfo(path).GetDirectories("*", SearchOption.AllDirectories)
@@ -123,6 +132,8 @@ namespace LocalAgent.Utilities
         // Creates a folder, and subfolders
         public void CreateFolder(string path)
         {
+            GuardPreventDamageToSystemFolders(path);
+
             if (Directory.Exists(path))
             {
                 Logger.Info($"Create Folder: {path}. Exists skipping");
@@ -158,12 +169,73 @@ namespace LocalAgent.Utilities
 
             return buildTargets;
         }
+
+         // Throws an Exception if the path appears to be a critical system folder (e.g. root of C:\ or /)
+        public static void GuardPreventDamageToSystemFolders(string path)
+        {
+            if (string.IsNullOrEmpty(path)) throw new ArgumentException("Path cannot be null or empty.", nameof(path));
+            var fullPath = Path.GetFullPath(path);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var root = Path.GetPathRoot(fullPath);
+                if (string.Equals(fullPath, root, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException($"Refusing to operate on critical system folder: {fullPath}");
+                }
+
+                // Throw an exception if the path is a parent of the root (e.g. C:\Windows\System32\..)
+                if (fullPath.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.Windows), StringComparison.OrdinalIgnoreCase) 
+                    || fullPath.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.System), StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException($"Refusing to operate on critical system folder: {fullPath}");
+                }
+
+                // Prevent writing to Program Files or Program Files (x86)
+                if (fullPath.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), StringComparison.OrdinalIgnoreCase) 
+                    || fullPath.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException($"Refusing to operate on critical system folder: {fullPath}");
+                }
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // Prevent writing to root or other critical system folders
+                if (fullPath == "/" 
+                    || fullPath == "/root" 
+                    || fullPath == "/home" 
+                    || fullPath == "/usr" 
+                    || fullPath == "/bin" 
+                    || fullPath == "/sbin"
+                    || fullPath == "/etc" 
+                    || fullPath == "/var")
+                {
+                    throw new ArgumentException($"Refusing to operate on critical system folder: {fullPath}");
+                }
+
+                // Prevent writing to /usr/local/bin or other common system paths
+                if (fullPath.StartsWith("/usr/local/bin", StringComparison.Ordinal) 
+                    || fullPath.StartsWith("/usr/bin", StringComparison.Ordinal) 
+                    || fullPath.StartsWith("/usr/sbin", StringComparison.Ordinal) 
+                    || fullPath.StartsWith("/bin", StringComparison.Ordinal) 
+                    || fullPath.StartsWith("/sbin", StringComparison.Ordinal))
+                {
+                    throw new ArgumentException($"Refusing to operate on critical system folder: {fullPath}");
+                }   
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("Unsupported operating system platform.");
+            }
+        }
     }
 
     public static class ExtensionMethods
     {
         public static void CopyTo(this DirectoryInfo directoryInfo, string destinationPath, bool overwrite = true)
         {
+            FileUtils.GuardPreventDamageToSystemFolders(directoryInfo.FullName);
+            FileUtils.GuardPreventDamageToSystemFolders(destinationPath);
+
             Parallel.ForEach(Directory.GetFileSystemEntries(directoryInfo.FullName, "*", SearchOption.AllDirectories), fileName => {
                 var destFile = $"{destinationPath}{fileName[directoryInfo.FullName.Length..]}";
                 Directory.CreateDirectory(Path.GetDirectoryName(destFile)!);
