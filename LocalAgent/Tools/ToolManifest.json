@@ -3,6 +3,8 @@
     {
       "name": "horusec",
       "version": "latest",
+      "description": "Horusec is a tool that performs static code analysis to identify security vulnerabilities in source code. It supports multiple programming languages and provides detailed reports on potential security issues.",
+      "documentationUrl": "https://horusec.io/docs/",
       "defaultArgs": ["start", "-p", "${Build.SourcesDirectory}", "-o", "json", "--json-output-file", "${Agent.TempDirectory}/horusec.json", "--disable-docker", "--config-file-path", "${Agent.HomeDirectory}/Tools/horusec-config.json"],
       "platforms": [
         {
@@ -25,6 +27,8 @@
     {
       "name": "trufflehog",
       "version": "3.73.0",
+      "description": "TruffleHog is a tool that searches through git repositories for high-entropy strings and secrets, such as API keys, passwords, and other sensitive information. It can be used to identify potential security risks in codebases.",
+      "documentationUrl": "https://github.com/trufflesecurity/trufflehog#readme",
       "defaultArgs": ["filesystem", "${Build.SourcesDirectory}", "--json"],
       "platforms": [
         {
@@ -51,12 +55,15 @@
       "name": "semgrep",
       "version": "1.82.0",
       "pythonModule": "semgrep",
+      "description": "Semgrep is a static analysis tool that finds bugs and enforces code standards.",
+      "documentationUrl": "https://semgrep.dev/docs/",
       "defaultArgs": ["--config=auto", "${Build.SourcesDirectory}", "--json"]
     },
     {
       "name": "dependency-check",
       "version": "12.2.0",
-      "documentationUrl": "https://dependency-check.github.io/DependencyCheck/dependency-check-cli/index.html",
+      "description": "Dependency-Check is a tool that identifies project dependencies and checks if there are any known, publicly disclosed, vulnerabilities.",
+      "documentationUrl": "https://jeremylong.github.io/DependencyCheck/dependency-check-cli/index.html",
       "defaultArgs": ["--scan", "${Build.SourcesDirectory}", "--format", "JSON", "--data", "${Agent.CacheDirectory}/dependency-check"],
       "platforms": [
         {
@@ -80,6 +87,8 @@
     {
       "name": "gitleaks",
       "version": "8.18.2",
+      "description": "Gitleaks is a tool for detecting hardcoded secrets in git repositories. It scans commit history and identifies potential security risks by looking for patterns that match common types of secrets, such as API keys, passwords, and tokens.",
+      "documentationUrl": "https://github.com/gitleaks/gitleaks#readme",
       "defaultArgs": ["detect", "--source", "${Build.SourcesDirectory}", "--report-format", "json"],
       "platforms": [
         {
@@ -103,6 +112,8 @@
     {
       "name": "grype",
       "version": "0.79.1",
+      "description": "Grype is a vulnerability scanner for container images and filesystems. It identifies known vulnerabilities in your dependencies and provides detailed reports.",
+      "documentationUrl": "https://github.com/anchore/grype#readme",
       "defaultArgs": ["dir:${Build.SourcesDirectory}", "--output", "json"],
       "platforms": [
         {
@@ -126,12 +137,15 @@
     {
       "name": "dotnet-vulnerable",
       "version": "",
+      "description": "dotnet list package --vulnerable is a command that lists all the NuGet packages in a .NET project that have known vulnerabilities. It helps developers identify and address security issues in their dependencies.",
+      "documentationUrl": "https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-list-package",
       "command": "dotnet",
       "defaultArgs": ["list", "package", "--vulnerable"]
     },
     {
       "name": "lizard",
       "version": "1.17.10",
+      "description": "Lizard is a code analysis tool that calculates cyclomatic complexity and other metrics for various programming languages. It helps developers identify complex code that may be difficult to maintain or understand.",      
       "documentationUrl": "https://github.com/terryyin/lizard",
       "pythonModule": "lizard",
       "defaultArgs": ["${Build.SourcesDirectory}"]
