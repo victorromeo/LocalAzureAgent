@@ -1,0 +1,17 @@
+{
+  "horusecCli": {
+    "outputFormat": "json",
+    "analysisTimeout": 600,
+    "enableInformationSeverity": false,
+    "enableOwaspDependencyCheck": false,
+    "enableShellcheck": false,
+    "ignore": [
+      "**/.git/**",
+      "**/bin/**",
+      "**/obj/**",
+      "**/.cache/**",
+      "**/.tools/**"
+    ],
+    "ignoreSeverity": ["INFO"]
+  }
+}

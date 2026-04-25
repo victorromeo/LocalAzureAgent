@@ -1,0 +1,84 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31321.278
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalAgent", "LocalAgent\LocalAgent.csproj", "{34054B14-04C3-4895-A518-C8045ECAB6B3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalAgent.Service", "LocalAgent.Service\LocalAgent.Service.csproj", "{C48B6F5E-2C3D-4F2A-8A2F-5D7D24E8DA5F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalAgent.Tests", "LocalAgent.Tests\LocalAgent.Tests.csproj", "{DD363C75-BAF7-4AB8-8169-57976931C3E0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{AA4EA65A-FFBA-490F-B4F7-D8DD6E4E1904}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp1", "Samples\ConsoleApp1\ConsoleApp1\ConsoleApp1.csproj", "{5371E905-DF33-4A13-B0C9-85A0E9D44B3E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApplication1", "Samples\WebApplication1\WebApplication1\WebApplication1.csproj", "{48CFD6D6-9D41-462E-9D2A-59E1589414DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsFormsApp1", "Samples\WindowsFormsApp1\WindowsFormsApp1\WindowsFormsApp1.csproj", "{E6549C7B-A1CC-4ACB-8718-7FE4644BE7EA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{C2F1C877-32A8-4425-93B1-9B405E244382}"
+	ProjectSection(SolutionItems) = preProject
+		azure-pipelines.yml = azure-pipelines.yml
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConsoleApp1", "ConsoleApp1", "{38C575A1-015D-495A-96A3-5580A69CBB3E}"
+	ProjectSection(SolutionItems) = preProject
+		Samples\ConsoleApp1\pipeline.yml = Samples\ConsoleApp1\pipeline.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WindowsFormsApp1", "WindowsFormsApp1", "{CE7FDBC9-166F-47E0-B11A-3E49FAF8C2A5}"
+	ProjectSection(SolutionItems) = preProject
+		Samples\WindowsFormsApp1\pipeline.yml = Samples\WindowsFormsApp1\pipeline.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebApplication1", "WebApplication1", "{C495FB2D-220E-4395-B947-2820DD84608B}"
+	ProjectSection(SolutionItems) = preProject
+		Samples\WebApplication1\pipeline.yml = Samples\WebApplication1\pipeline.yml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{34054B14-04C3-4895-A518-C8045ECAB6B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34054B14-04C3-4895-A518-C8045ECAB6B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34054B14-04C3-4895-A518-C8045ECAB6B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34054B14-04C3-4895-A518-C8045ECAB6B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C48B6F5E-2C3D-4F2A-8A2F-5D7D24E8DA5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C48B6F5E-2C3D-4F2A-8A2F-5D7D24E8DA5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C48B6F5E-2C3D-4F2A-8A2F-5D7D24E8DA5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C48B6F5E-2C3D-4F2A-8A2F-5D7D24E8DA5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD363C75-BAF7-4AB8-8169-57976931C3E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD363C75-BAF7-4AB8-8169-57976931C3E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD363C75-BAF7-4AB8-8169-57976931C3E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD363C75-BAF7-4AB8-8169-57976931C3E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5371E905-DF33-4A13-B0C9-85A0E9D44B3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5371E905-DF33-4A13-B0C9-85A0E9D44B3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5371E905-DF33-4A13-B0C9-85A0E9D44B3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48CFD6D6-9D41-462E-9D2A-59E1589414DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48CFD6D6-9D41-462E-9D2A-59E1589414DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48CFD6D6-9D41-462E-9D2A-59E1589414DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6549C7B-A1CC-4ACB-8718-7FE4644BE7EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6549C7B-A1CC-4ACB-8718-7FE4644BE7EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6549C7B-A1CC-4ACB-8718-7FE4644BE7EA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5371E905-DF33-4A13-B0C9-85A0E9D44B3E} = {38C575A1-015D-495A-96A3-5580A69CBB3E}
+		{48CFD6D6-9D41-462E-9D2A-59E1589414DD} = {C495FB2D-220E-4395-B947-2820DD84608B}
+		{E6549C7B-A1CC-4ACB-8718-7FE4644BE7EA} = {CE7FDBC9-166F-47E0-B11A-3E49FAF8C2A5}
+		{38C575A1-015D-495A-96A3-5580A69CBB3E} = {AA4EA65A-FFBA-490F-B4F7-D8DD6E4E1904}
+		{CE7FDBC9-166F-47E0-B11A-3E49FAF8C2A5} = {AA4EA65A-FFBA-490F-B4F7-D8DD6E4E1904}
+		{C495FB2D-220E-4395-B947-2820DD84608B} = {AA4EA65A-FFBA-490F-B4F7-D8DD6E4E1904}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {961CF71C-A331-4585-9D9C-5A1E379B1DE7}
+	EndGlobalSection
+EndGlobal
